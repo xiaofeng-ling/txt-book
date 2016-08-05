@@ -17,7 +17,16 @@ $operator = $_GET['operator'];
 
 $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP) or die("创建失败！\n");
 socket_connect($socket, $ip, $port);
-socket_write($socket, $operator."|".$_SESSION['user']."|".$_GET['book']);
+
+if ((int)$operator<64)
+	socket_write($socket, $operator."|".$_SESSION['user']."|".$_GET['book']);
+else
+{
+	if (empty($_GET['offset']))
+		exit();
+	
+	socket_write($socket, $operator."|".$_SESSION['user']."|".$_GET['book']."|".$_GET['offset']);
+}
 
 $ret = "";
 $ret = socket_read($socket, 4096);

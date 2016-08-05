@@ -20,7 +20,7 @@ if (!isset($_SESSION['user']))
 			echo "用户名或者密码错误！";
 			exit();
 		}
-		$_SESSION['user'] = trim($_POST['name']);//mysqli_real_escape_string($dbc,trim($_POST['name']));
+		//mysqli_real_escape_string($dbc,trim($_POST['name']));
 		
 		//$name = mysqli_real_escape_string($dbc,trim($_POST['name']));
 		//$passwd = mysqli_real_escape_string($dbc,trim($_POST['name']));
@@ -43,6 +43,12 @@ if (!isset($_SESSION['user']))
 		$ret = socket_read($socket, 1024);
 		
 		// 这里判断返回值是不是成功，如果不成功则删除session中的对象，否则跳转页面
+		
+		if (!strcmp($ret, "登陆成功!"))
+		{
+			$_SESSION['user'] = trim($_POST['name']);
+			header('location: loged.html');
+		}
 	}
 }
 else

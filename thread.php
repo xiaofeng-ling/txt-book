@@ -13,6 +13,7 @@ include "user.php";
 0x08	增加书籍
 0x16	删除书籍
 0x32	退出
+0x64	保存书籍进度
 
 
 */
@@ -102,6 +103,16 @@ function socket_exe($sock)
 			socket_write($sock, "注销成功！\n");
 
 			break;
+			
+		case 64:
+			if (!array_key_exists($buffer_array[1], $global_users))
+			{
+				socket_write($sock, "用户不存在，请登录!\n");
+				return -16;
+			}
+			
+			$global_users[$buffer_array[1]]->push_function($sock, $global_users[$buffer_array[1]]->save_offset($buffer_array[2], $buffer_array[3]));
+			$global_users[$buffer_array[1]]->run();
 
 		default:
 			break;

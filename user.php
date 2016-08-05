@@ -39,11 +39,14 @@ class User
 
 		$fp = fopen($book, "r");
 		fseek($fp, $this->next_offset);
-		$buffer = fread($fp, $size*2);	// 采用gb2312或者其他的两字节存储方式存储的文本文件
+		$buffer = fread($fp, $size*4);	// 采用utf-8编码存储的文本文件
+		// 采用mb_substr用于截取中文
+		$ret = mb_substr(buffer, $size, "utf-8");
 	
-		$this->next_offset = ftell($fp);
+		// 采用strlen用于计算中文所占字节数
+		$this->next_offset = $this->next_offset + strlen($ret);
 		fclose($fp);
-		return $buffer;
+		return $ret;
 	}
 
 	function get_prev($book, $size)
@@ -59,11 +62,26 @@ class User
 		}
 
 		$fp = fopen($book, "r");
-		$this->prev_offset -= $size*2;
-		fseek($fp, $this->$prev_offset);
-		$buffer = fread($fp, $size*2);
+		fseek($fp, $this->$prev_offset-$size*4);
+		$buffer = fread($fp, $size*4);
+		
+		$ret = mb_substr($buffer, -1, $size, "utf-8");
+		
+		$this->$prev_offset -= strlen($ret);
+		
 		fclose($fp);
-		return $buffer;
+		return $ret;
+	}
+	
+	function save_offset($book, $offset)
+	{
+		if (!file_exists($book))
+			return "文件不存在！";
+		
+		if (!array_key_exists($book, $this->books))
+			return "没有这本书！";
+		
+		$this->books[$book] = $this->books[$book] - $offset;
 	}
 
 	function save_user()

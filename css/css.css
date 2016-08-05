@@ -1,0 +1,27 @@
+div.right_feature
+{
+	width:10%;
+	height:40%;
+	padding:1px;
+	position:fixed;
+	right:0px;
+	top:20%;
+	z-index:1;
+}
+
+div.right_setting
+{
+	width:10%;
+	height:40%;
+	padding:1px;
+	position:fixed;
+	right:0px;
+	top:20%;
+	z-index:10;
+	display:none;
+}
+
+body
+{
+	font-family:"微软雅黑", "宋体"
+}

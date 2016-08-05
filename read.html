@@ -1,159 +1,26 @@
 <!doctype html>
 <html>
-<meta charset="utf-8">
+<meta charset="UTF-8">
 <head>
 <title id="read_title"></title>
+<link rel="stylesheet" content="text/css" href="css/css.css">
 </head>
 
-<style></style>
+<script src="js/ajax.js"></script>
 
-<script>
-
-var flag = 1;
-var buffer = "";
-var name = "";
-var clickFlag = 0;
-
-function clickScroll() {
-	if (clickFlag) {
-		zdocument.body.scrollTop = z.scrollTop + window.innerHeight;
-	}
-}
-
-window.onscroll = function load() {
-	var xmlhttp;
-	xmlhttp = new XMLHttpRequest();
-	console.log(document.body.scrollHeight - document.body.scrollTop);
-	if ((document.body.scrollHeight - document.body.scrollTop) <= 2000) {
-		flag = 1;
-	}
-	
-	xmlhttp.onreadystatechange=function()
-	{
-		if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-			buffer = buffer + xmlhttp.responseText;
-			readMain.innerHTML = buffer;
-			flag = 0;
-		}
-	}
-	
-	//document.getElementById("demo").style.animation = "set_opacity 5s";
-	xmlhttp.open("GET", "read.php?operator=2", true);
-	
-	if (flag) {
-		echo "123";
-		xmlhttp.send();
-	}
-}
-
-</script>
-
-<body onclick="clickScroll()"">
+<!-- 点击翻页 -->
+<body onclick="clickScroll()">
 
 <div id="readMain">
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-123123123123</p>
-
+12312312312
 </div>
+
+<!-- setting层排在调用层上用以避免onmouseove冒泡时产生闪烁 -->
+<div id="setting" class="right_setting" onmousemove="displayBlock()" onmouseout="displayNone()">
+<input type="checkbox" id="saveBox">save<br>
+</div>
+
+<div id="feature" class="right_feature" onmousemove="displayBlock()" onmouseout="displayNone()"></div>
 
 </body>
 
