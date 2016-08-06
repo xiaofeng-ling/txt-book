@@ -27,6 +27,7 @@ if (!isset($_SESSION['user']))
 		
 		$name = trim($_POST['name']);
 		$passwd = trim($_POST['password']);
+		$_SESSION['user'] = trim($_POST['name']);
 
 		//$checksum = sha256($name) & sha256($passwd);
 		$checksum = $name.$passwd;
@@ -44,10 +45,14 @@ if (!isset($_SESSION['user']))
 		
 		// 这里判断返回值是不是成功，如果不成功则删除session中的对象，否则跳转页面
 		
-		if (!strcmp($ret, "登陆成功!"))
+		if (!strcmp($ret, "登录成功!") || !strcmp($ret, "用户已存在，请勿重复登录!"))
 		{
-			$_SESSION['user'] = trim($_POST['name']);
 			header('location: loged.html');
+		}
+		else
+		{
+			unset($_SESSION['user']);
+			echo $ret;
 		}
 	}
 }

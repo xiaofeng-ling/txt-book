@@ -4,32 +4,34 @@ include "tools.php";
 
 class User
 {
-	var $name;
-	var $prev_offset;
-	var $next_offset;
-	var $books;
-	var $current_book;
-	var $exe_function;
-	var $run_lock;
+	private $name;
+	private $prev_offset;
+	private $next_offset;
+	private $books;
+	private $current_book;
+	private $exe_function;
+	private $run_lock;
 
-	function __construct($name)
+	public function __construct($name)
 	{
 		/*
 		这里添加代码，用于根据name来取得保存的信息，如果目标文件不存在，则创建，并初始化目标文件
 		*/
 		$this->name = $name;
 		$this->read_user();
-		$this->prev_offset = $this->next_offset = 0;
+		$this->current_book = array_keys($this->books)[0];
+		$this->prev_offset = $this->next_offset = $this->books[$this->current_book];
 		$this->current_book = "";
 		$this->exe_function = array();
 		$this->run_lock = 0;
 	}
 	
-	function get_next($book, $size)
+	public function get_next($book, $size)
 	{
 		if (!file_exists($book))
 			return "文件不存在!";
 		
+		// 切换书籍
 		if (strcmp($this->current_book, $book))
 		{
 			$books[$this->current_book] = $this->next_offset;
@@ -41,19 +43,21 @@ class User
 		fseek($fp, $this->next_offset);
 		$buffer = fread($fp, $size*4);	// 采用utf-8编码存储的文本文件
 		// 采用mb_substr用于截取中文
-		$ret = mb_substr(buffer, $size, "utf-8");
+		$ret = mb_substr($buffer, 0, $size, "utf-8");
 	
 		// 采用strlen用于计算中文所占字节数
 		$this->next_offset = $this->next_offset + strlen($ret);
+		$this->books[$this->current_book] = $this->next_offset;
 		fclose($fp);
 		return $ret;
 	}
 
-	function get_prev($book, $size)
+	public function get_prev($book, $size)
 	{
 		if (!file_exists($book))
 			return "文件不存在!";
 		
+		// 切换书籍
 		if (strcmp($this->current_book, $book))
 		{
 			$books[$this->current_book] = $this->next_offset;
@@ -62,18 +66,19 @@ class User
 		}
 
 		$fp = fopen($book, "r");
-		fseek($fp, $this->$prev_offset-$size*4);
+		fseek($fp, $this->prev_offset-$size*4);
 		$buffer = fread($fp, $size*4);
 		
-		$ret = mb_substr($buffer, -1, $size, "utf-8");
+		// 倒序提取字符
+		$ret = mb_substr($buffer, -$size, $size, "utf-8");
 		
-		$this->$prev_offset -= strlen($ret);
+		$this->prev_offset -= strlen($ret);
 		
 		fclose($fp);
 		return $ret;
 	}
 	
-	function save_offset($book, $offset)
+	public function save_offset($book, $offset)
 	{
 		if (!file_exists($book))
 			return "文件不存在！";
@@ -84,7 +89,7 @@ class User
 		$this->books[$book] = $this->books[$book] - $offset;
 	}
 
-	function save_user()
+	public function save_user()
 	{
 		/*
 		这里采用合并函数进行打包存储
@@ -98,7 +103,7 @@ class User
 		
 	}
 
-	function read_user()
+	public function read_user()
 	{
 		/*
 		这里打开文件，并从文件中获取足够的数据
@@ -117,12 +122,12 @@ class User
 
 	}
 
-	function add_book($book)
+	public function add_book($book)
 	{
 		if (!file_exists($book))
 			return "文件不存在!";
 
-		if (array_key_exists($this->books, $book))
+		if (array_key_exists($book, $this->books))
 			return "已存在！";
 
 		$this->books[$book] = 0;
@@ -130,20 +135,29 @@ class User
 		return "添加成功！\n";
 	}
 
-	function del_book($book)
+	public function del_book($book)
 	{
 		if (!file_exists($book))
 			return "文件不存在!";
 
-		if (!array_key_exists($this->books, $book))
+		if (!array_key_exists($book, $this->books))
 			return "书名不存在!";
 
 		unset($this->books[$book]);
 
 		return "删除成功！\n";
 	}
+	
+	public function get_books()
+	{
+		/*
+		本函数用于返回用户的所有书籍
+		*/
+		$temp = array_keys($this->books);
+		return array_to_string($temp, "|");
+	}
 
-	function ret_sock($sock, $function)
+	private function ret_sock($sock, $function)
 	{
 		/*
 		这里先用buffer变量测试函数，在实际应用中应该采用如下形式
@@ -153,16 +167,16 @@ class User
 		socket_close($sock);
 	}
 
-	function push_function($sock, $function)
+	public function push_function($sock, $function)
 	{
 		/*
 		很简单的函数，将待执行函数压栈
 		*/
-		echo "push_function exe!\n";
+		echo "push_public function exe!\n";
 		array_push($this->exe_function, $this->ret_sock($sock, $function));
 	}
 
-	function run()
+	public function run()
 	{
 		/*
 		开始逐项执行数组中对应的函数，采用锁形式
@@ -181,12 +195,11 @@ class User
 		$this->run_lock = 0;
 	}
 
-	function __destruct()
+	public function __destruct()
 	{
 		/*
 		析构函数，目前不做任何事情
 		*/
-
 		$this->save_user();
 	}
 }

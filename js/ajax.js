@@ -1,12 +1,50 @@
+// 全局变量
 var flag = 1;
 var buffer = "";
-var name = "";
-var clickFlag = 0;
+var ajax_lock = 0;
 
-function clickScroll() {
+function clickScrollNext() {
 	// 点击指定位置进行翻页，目前测试中
-	if (clickFlag) {
-		document.body.scrollTop = document.body.scrollTop + window.innerHeight;
+	if (click.checked) {
+			document.body.scrollTop += window.innerHeight;
+	}
+}
+
+function clickScrollPrev() {
+	// 点击指定位置进行翻页，目前测试中
+	if (click.checked) {
+			document.body.scrollTop -= window.innerHeight;
+	}
+}
+
+function displayClick() {
+	if (click.checked) {
+		clickPrev.style = "top:0%;  display:block;";
+		clickNext.style = "top:50%; display:block;";
+	}
+	else {
+		clickPrev.style = "display:none;";
+		clickNext.style = "display:none;";
+	}
+}
+
+function getBooks() {
+	var xmlhttp = new XMLHttpRequest();
+	var books;
+	
+	xmlhttp.open("GET", "read.php?operator=128&book=", false);
+	xmlhttp.send();
+	
+	xmlhttp.onreadystatechange=function() {
+		if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+			books = xmlhttp.responseText.split("|");
+			
+			for (book in books) {
+				var newNode = document.createElement("a");
+				newNode.innerHTML = book;
+				setting.addendChild(newNode);
+			}
+		}
 	}
 }
 
@@ -19,65 +57,72 @@ window.onload = function() {
 	xmlhttp.onreadystatechange=function() {
 		if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
 			buffer = xmlhttp.responseText
-			readMain.innerHTML = buffer + xmlhttp.responseText.replace("\n", "</br>");
+			//readMain.innerHTML = buffer + xmlhttp.responseText.replace("\n", "</br>");
 		}
 	}
 	
 	// 保存的时候页面获取文件偏移量
 	readMain.onmouseup = function() {
-	var selectText = window.getSelection().toString();
-	var pos = 0;
-	
-	// 获取文本并将其显示出来
-	if ((pos = buffer.lastIndexOf(selectText)) > 0) {
-		var tempStr1 = readMain.innerHTML.substring(0, pos);
-		var newText = "<span style='background:yellow'>" + selectText + "</span>";
-		var tempStr2 = readMain.innerHTML.substring(pos+selectText.length, buffer.replace("\n", "</br>").length);
+		var selectText = window.getSelection().toString();
+		var pos = 0;
 		
-		readMain.innerHTML = tempStr1 + newText + tempStr2;
-		
-		if (true == confirm("确认是段标黄的文本吗？")) {
-			var tempstr = buffer.substring(pos, buffer.length);
+		// 获取文本并将其显示出来
+		if ((pos = buffer.lastIndexOf(selectText)) > 0) {
+			var tempStr1 = readMain.innerHTML.substring(0, pos);
+			var newText = "<span style='background:yellow'>" + selectText + "</span>";
+			var tempStr2 = readMain.innerHTML.substring(pos+selectText.length, buffer.replace("\n", "</br>").length);
 			
-			offset = function() {
-				var charnum = 0;
-				for (i=pos; i<tempstr.length; i++) {
-					charnum += (buffer.charCodeAt(i)>255 ? 3 : 1);
+			readMain.innerHTML = tempStr1 + newText + tempStr2;
+			
+			if (true == confirm("确认是这段标黄的文本吗？")) {
+				var tempstr = buffer.substring(pos, buffer.length);
+				
+				offset = function() {
+					var charnum = 0;
+					for (i=pos; i<tempstr.length; i++) {
+						charnum += (buffer.charCodeAt(i)>255 ? 3 : 1);
+					}
+					
+					return charnum;
 				}
 				
-				return charnum;
-			}
-			
-			var xmlhttp = new XMLHttpRequest();
-			
-			xmlhttp.open("GET", "read.php?operator=...这里需要写保存的操作符&book=1111.txt&offset="+offset, true);
-			xmlhttp.send();
-			
-			xmlhttp.onreadystatechange = function() {
-				if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-					alert("进度已保存，可以安全退出！");
+				var xmlhttp = new XMLHttpRequest();
+				
+				xmlhttp.open("GET", "read.php?operator=64&book=1111.txt&offset="+offset, true);
+				xmlhttp.send();
+				
+				xmlhttp.onreadystatechange = function() {
+					if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+						alert("进度已保存，可以安全退出！");
+					}
 				}
 			}
-		}
-	}	
+		}	
 	}
+	
+		// 绑定点击翻页事件
+	form.addEventListener("click", displayClick);
+	clickNext.addEventListener("click", clickScrollNext);
+	clickPrev.addEventListener("click", clickScrollPrev);
 }
 
 window.onscroll = function() {
 	// 滚动无限加载，目前测试中
 	var xmlhttp;
 	xmlhttp = new XMLHttpRequest();
-
-	if ((document.body.scrollHeight - document.body.scrollTop) <= 2000) {
+	
+	if ((document.body.scrollHeight - document.body.scrollTop) <= 2000 && ajax_lock==0) {
 		flag = 1;
+		ajax_lock = 1;
 		xmlhttp.open("GET", "read.php?operator=2&book=1111.txt", true);
 		xmlhttp.send();
 	}
 	
-	if (document.body.scrollTop <= 2000) {
+	if (document.body.scrollTop <= 200 && ajax_lock==0) {
 		flag = 2;
-		xmlhttp.open("GET", "read.php?operator=3&book=1111.txt", true);
-		xmlhttp.send();	
+		ajax_lock = 1;
+		xmlhttp.open("GET", "read.php?operator=4&book=1111.txt", true);
+		xmlhttp.send();
 	}
 	
 	// ajax 回调函数
@@ -91,6 +136,7 @@ window.onscroll = function() {
 				readMain.innerHTML = xmlhttp.responseText.replace("\n", "</br>") + readMain.innerHTML;
 			
 			flag = 0;
+			ajax_lock = 0;
 		}
 	}
 }
@@ -101,31 +147,4 @@ function displayBlock() {
 
 function displayNone() {
 	setting.style = "display:none";
-}
-
-function setClickFlag(e) {
-	clickFlag = e;	
-}
-
-window.onload = function() {
-	readMain.onmouseup = function() {
-	if (!saveBox.checked)
-		return -1;
-		
-	var selectText = window.getSelection().toString();
-	var pos;
-	
-	if ((pos = buffer.lastIndexOf(selectText)) > 0)
-	{
-		var tempStr1 = readMain.innerHTML.substring(0, pos);
-		var newText = "<span style='background:yellow'>" + selectText + "</span>";
-		var tempStr2 = readMain.innerHTML.substring(pos+selectText.length, buffer.replace("\n", "</br>").length);
-		
-		readMain.innerHTML = tempStr1 + newText + tempStr2;
-	}
-	else
-		alert("未搜索到指定文本，请重试！");
-	
-	console.log(selectText);
-}
 }

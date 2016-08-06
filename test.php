@@ -3,11 +3,14 @@
 include "user.php";
 
 $temp = new User("123");
-$buffer = "";
 
-$temp->push_function($buffer, $temp->get_next("天才黄金手.txt", 3000));
-$temp->run();
-
-echo $buffer;
+echo $temp->get_prev("1111.txt", 20);
+echo "\n";
+echo $temp->get_prev("1111.txt", 20);
+echo "\n";
+echo $temp->get_prev("1111.txt", 20);
+echo "\n";
+echo $temp->get_prev("1111.txt", 20);
+echo "\n";
 
 ?>

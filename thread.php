@@ -14,6 +14,7 @@ include "user.php";
 0x16	删除书籍
 0x32	退出
 0x64	保存书籍进度
+0x128	获取所有书籍
 
 
 */
@@ -33,7 +34,7 @@ function socket_exe($sock)
 		case 1:
 			if (array_key_exists($buffer_array[1], $global_users))
 			{
-				socket_write($sock, "用户已存在，请勿重复登录!\n");
+				socket_write($sock, "用户已存在，请勿重复登录!");
 				return -1;
 			}
 			
@@ -108,11 +109,22 @@ function socket_exe($sock)
 			if (!array_key_exists($buffer_array[1], $global_users))
 			{
 				socket_write($sock, "用户不存在，请登录!\n");
-				return -16;
+				return -64;
 			}
 			
 			$global_users[$buffer_array[1]]->push_function($sock, $global_users[$buffer_array[1]]->save_offset($buffer_array[2], $buffer_array[3]));
 			$global_users[$buffer_array[1]]->run();
+			
+		case 128:
+			if (!array_key_exists($buffer_array[1], $global_users))
+			{
+				socket_write($sock, "用户不存在，请登录!\n");
+				return -128;
+			}
+			
+			$global_users[$buffer_array[1]]->push_function($sock, $global_users[$buffer_array[1]]->get_books());
+			$global_users[$buffer_array[1]]->run();
+			
 
 		default:
 			break;
