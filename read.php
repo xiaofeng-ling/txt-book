@@ -29,7 +29,7 @@ else
 }
 
 $ret = "";
-$ret = socket_read($socket, 4096);
+$ret = socket_read($socket, 8192);
 
 echo $ret;
 

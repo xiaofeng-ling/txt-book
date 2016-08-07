@@ -21,7 +21,6 @@ class User
 		$this->read_user();
 		$this->current_book = array_keys($this->books)[0];
 		$this->prev_offset = $this->next_offset = $this->books[$this->current_book];
-		$this->current_book = "";
 		$this->exe_function = array();
 		$this->run_lock = 0;
 	}
@@ -40,6 +39,7 @@ class User
 		}
 
 		$fp = fopen($book, "r");
+		echo $this->next_offset."   next_offset\n";
 		fseek($fp, $this->next_offset);
 		$buffer = fread($fp, $size*4);	// 采用utf-8编码存储的文本文件
 		// 采用mb_substr用于截取中文
@@ -49,6 +49,7 @@ class User
 		$this->next_offset = $this->next_offset + strlen($ret);
 		$this->books[$this->current_book] = $this->next_offset;
 		fclose($fp);
+		
 		return $ret;
 	}
 
@@ -66,13 +67,29 @@ class User
 		}
 
 		$fp = fopen($book, "r");
-		fseek($fp, $this->prev_offset-$size*4);
-		$buffer = fread($fp, $size*4);
 		
+		$offset = 0;
+		$buffer = "";
+
+		if ($this->prev_offset-$size*4 < 0)
+		{
+			if ($this->prev_offset != 0)
+				$buffer = fread($fp, $this->prev_offset);
+		}
+		else
+		{
+			fseek($fp, $this->prev_offset-$size*4);
+			$buffer = fread($fp, $size*4);
+		}		
+
 		// 倒序提取字符
 		$ret = mb_substr($buffer, -$size, $size, "utf-8");
 		
 		$this->prev_offset -= strlen($ret);
+		echo "offset_1: ".$this->prev_offset."\n";
+		$this->prev_offset = $this->prev_offset > 0 ? $this->prev_offset : 0;
+		
+		echo "offset_2: ".$this->prev_offset."\n";
 		
 		fclose($fp);
 		return $ret;

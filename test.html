@@ -1,0 +1,24 @@
+<html>
+
+<body>
+
+<script>
+
+function myclick() {
+var xmlhttp = new XMLHttpRequest();
+xmlhttp.open("GET", "read.php?operator=4&book=1111.txt", true);
+xmlhttp.send();
+
+xmlhttp.onreadystatechange=function() {
+	book.innerHTML += xmlhttp.responseText;
+	}
+}
+
+</script>
+
+<div id="book"></div>
+<button onclick="myclick()">123
+
+</body>
+
+</html>
