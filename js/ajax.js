@@ -1,7 +1,10 @@
 // 全局变量
 var flag = 1;
-var buffer = "";
+var string_buffer = "";
 var ajax_lock = 0;
+var current_book = "";
+var tail_end_book = "";
+var head_end_book = "";
 
 function clickScrollNext() {
 	// 点击指定位置进行翻页，目前测试中
@@ -28,38 +31,46 @@ function displayClick() {
 	}
 }
 
-function getBooks() {
-	var xmlhttp = new XMLHttpRequest();
-	var books;
-	
-	xmlhttp.open("GET", "read.php?operator=128&book=", false);
-	xmlhttp.send();
-	
-	xmlhttp.onreadystatechange=function() {
-		if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-			books = xmlhttp.responseText.split("|");
+window.onload = function() {
+	// 我不知道为什么采用(function getBooks() {})(); 这样的方式不行....
+	// 加载所有书籍
+	(function getBooks() {
+		var xmlhttp = new XMLHttpRequest();
+		var books_buffer = "";
+		
+		xmlhttp.open("GET", "read.php?operator=128&book=NULL&offset=NULL", true);
+		xmlhttp.send();
+		
+		xmlhttp.onreadystatechange=function() {
+			if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+				books_buffer = xmlhttp.responseText.split("|");
+				current_book = books_buffer[0];
+				
+				for (book in books_buffer) {
+					node_li = document.createElement("li");
+					node_li.innerHTML = books_buffer[book];
+					node_li.style = "list-style-type:none";
+					books.appendChild(node_li);
+				}
+			}
 			
-			for (book in books) {
-				var newNode = document.createElement("a");
-				newNode.innerHTML = book;
-				setting.addendChild(newNode);
+			// 异步加载第一本书
+			var xmlhttp_first = new XMLHttpRequest();
+			
+			if (current_book !== "") {
+			
+				xmlhttp_first.open("GET", "read.php?operator=2&book="+current_book, true);
+				xmlhttp_first.send();
+				// 页面加载的时候ajax
+				xmlhttp_first.onreadystatechange=function() {
+					if (xmlhttp_first.readyState == 4 && xmlhttp_first.status == 200) {
+						string_buffer = xmlhttp_first.responseText
+						readMain.innerHTML = string_buffer + xmlhttp_first.responseText.replace("\n", "<br>");
+					}
+				}
 			}
 		}
-	}
-}
-
-window.onload = function() {
-	var xmlhttp = new XMLHttpRequest();
-	
-	xmlhttp.open("GET", "read.php?operator=2&book=1111.txt", true);
-	xmlhttp.send();
-	// 页面加载的时候ajax
-	xmlhttp.onreadystatechange=function() {
-		if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-			buffer = xmlhttp.responseText
-			//readMain.innerHTML = buffer + xmlhttp.responseText.replace("\n", "</br>");
-		}
-	}
+	}());	
 	
 	// 保存的时候页面获取文件偏移量
 	readMain.onmouseup = function() {
@@ -67,20 +78,20 @@ window.onload = function() {
 		var pos = 0;
 		
 		// 获取文本并将其显示出来
-		if ((pos = buffer.lastIndexOf(selectText)) > 0) {
+		if ((pos = string_buffer.lastIndexOf(selectText)) > 0) {
 			var tempStr1 = readMain.innerHTML.substring(0, pos);
 			var newText = "<span style='background:yellow'>" + selectText + "</span>";
-			var tempStr2 = readMain.innerHTML.substring(pos+selectText.length, buffer.replace("\n", "</br>").length);
+			var tempStr2 = readMain.innerHTML.substring(pos+selectText.length, string_buffer.replace("\n", "<br>").length);
 			
 			readMain.innerHTML = tempStr1 + newText + tempStr2;
 			
 			if (true == confirm("确认是这段标黄的文本吗？")) {
-				var tempstr = buffer.substring(pos, buffer.length);
+				var tempstr = string_buffer.substring(pos, string_buffer.length);
 				
 				offset = function() {
 					var charnum = 0;
 					for (i=pos; i<tempstr.length; i++) {
-						charnum += (buffer.charCodeAt(i)>255 ? 3 : 1);
+						charnum += (string_buffer.charCodeAt(i)>255 ? 3 : 1);
 					}
 					
 					return charnum;
@@ -88,7 +99,7 @@ window.onload = function() {
 				
 				var xmlhttp = new XMLHttpRequest();
 				
-				xmlhttp.open("GET", "read.php?operator=64&book=1111.txt&offset="+offset, true);
+				xmlhttp.open("GET", "read.php?operator=64&book="+current_book+"&offset="+offset, true);
 				xmlhttp.send();
 				
 				xmlhttp.onreadystatechange = function() {
@@ -100,40 +111,90 @@ window.onload = function() {
 		}	
 	}
 	
-		// 绑定点击翻页事件
+	// 绑定点击翻页事件
 	form.addEventListener("click", displayClick);
 	clickNext.addEventListener("click", clickScrollNext);
 	clickPrev.addEventListener("click", clickScrollPrev);
+	
+	window.addEventListener("DOMMouseScroll", wheel);
+	window.onmousewheel = document.onmousewheel = wheel;
+	
+	// 用于切换小说
+	books.onclick = function(e) {
+		if (true == confirm("确认切换至小说："+e.target.innerHTML)) {
+			current_book = e.target.innerHTML;
+			readMain.innerHTML = "";
+			tail_end_book = head_end_book = "";
+			window.wheel();
+		}
+	}
 }
 
-window.onscroll = function() {
-	// 滚动无限加载，目前测试中
+function wheel(event) {
+	var delta = 0;
 	var xmlhttp;
 	xmlhttp = new XMLHttpRequest();
+	var count = 5;
 	
-	if ((document.body.scrollHeight - document.body.scrollTop) <= 2000 && ajax_lock==0) {
-		flag = 1;
-		ajax_lock = 1;
-		xmlhttp.open("GET", "read.php?operator=2&book=1111.txt", true);
-		xmlhttp.send();
+	if (!event)
+		event = window.event;
+	
+	if (event.wheelDelta) {
+		// wheelDelta属性提供120的倍数，表明滚动的力度，正值代表上，负值代表下
+		delta = event.wheelDelta/120;
+		
+		if (window.opera)
+			delta = -delta;
+	}
+	else if (event.detail) {
+		// 这里是为了火狐
+		delta = -event.detail/3;
 	}
 	
-	if (document.body.scrollTop <= 200 && ajax_lock==0) {
-		flag = 2;
-		ajax_lock = 1;
-		xmlhttp.open("GET", "read.php?operator=4&book=1111.txt", true);
+	
+	// 滚动无限加载，目前测试中
+	if ((document.body.scrollHeight - document.body.scrollTop) <= 2000 && delta<0 && !ajax_lock && current_book != tail_end_book) {
+		flag = 1;
+		xmlhttp.open("GET", "read.php?operator=2&book="+current_book, true);
 		xmlhttp.send();
+		ajax_lock = 1;
+	}
+	
+	if (document.body.scrollTop <= 2000 && delta>0 && !ajax_lock && current_book != head_end_book) {
+		flag = 2;
+		xmlhttp.open("GET", "read.php?operator=4&book="+current_book, true);
+		xmlhttp.send();
+		ajax_lock = 1;
 	}
 	
 	// ajax 回调函数
 	xmlhttp.onreadystatechange=function() {
 		if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-			buffer = xmlhttp.responsetText;
+			if (xmlhttp.responseText === "") {
+				if (flag == 1)
+					tail_end_book = current_book;
+				else if (flag == 2)
+					head_end_book = current_book;
+				
+				if (count && readMain.innerHTML === "") {
+				// 如果到达结尾，服务端将不会返回数据，此时需要获取上一页的数据，最多尝试5次
+				xmlhttp.open("GET", "read.php?operator=4&book="+current_book, true);
+				xmlhttp.send();
+				count--;
+				end_book = current_book;
+			}
+			}
+			
+			
+			
+			string_buffer = xmlhttp.responsetText;
+			var node = document.createElement("div");
+			node.innerHTML = xmlhttp.responseText.replace("\n", "<br>");
 			
 			if (1 == flag)
-				readMain.innerHTML = readMain.innerHTML + xmlhttp.responseText.replace("\n", "</br>");
+				readMain.appendChild(node);
 			else
-				readMain.innerHTML = xmlhttp.responseText.replace("\n", "</br>") + readMain.innerHTML;
+				readMain.insertBefore(node, readMain.firstChild);
 			
 			flag = 0;
 			ajax_lock = 0;

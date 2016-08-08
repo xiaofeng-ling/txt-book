@@ -20,7 +20,7 @@ div.right_setting
 	top:20%;
 	z-index:10;
 	display:none;
-	background:0xFF3E3F;
+	background-color:#FF3E3F;
 }
 
 div.click_css

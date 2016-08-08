@@ -39,7 +39,6 @@ class User
 		}
 
 		$fp = fopen($book, "r");
-		echo $this->next_offset."   next_offset\n";
 		fseek($fp, $this->next_offset);
 		$buffer = fread($fp, $size*4);	// 采用utf-8编码存储的文本文件
 		// 采用mb_substr用于截取中文
@@ -86,10 +85,7 @@ class User
 		$ret = mb_substr($buffer, -$size, $size, "utf-8");
 		
 		$this->prev_offset -= strlen($ret);
-		echo "offset_1: ".$this->prev_offset."\n";
 		$this->prev_offset = $this->prev_offset > 0 ? $this->prev_offset : 0;
-		
-		echo "offset_2: ".$this->prev_offset."\n";
 		
 		fclose($fp);
 		return $ret;
