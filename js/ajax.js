@@ -6,6 +6,79 @@ var current_book = "";
 var tail_end_book = "";
 var head_end_book = "";
 
+/*--------这段代码是借鉴jQuery的，真的是，太精妙了，虽然还有另一种写法，但这种思想才是最棒的！--------------*/
+var Ajax = function(method, url, async) {
+	return new Ajax.prototype.init(method, url, async);
+}
+
+Ajax.prototype = {
+	init: function(method, url, async) {
+		
+		if (typeof(async) === "undefined")
+			async = true;
+		
+		this.http = new XMLHttpRequest();
+		this.http.open(method, url, async);
+		return this;
+	},
+	
+	callback: function(func) {
+		this.http.onreadystatechange = func;
+		return this;
+	},
+	
+	send: function() {
+		this.http.send();
+		return this;
+	},
+	
+	responseText: function() {
+		return this.http.responseText;
+	},
+	
+	isSuccess: function() {
+		return this.http.readyState == 4 && this.http.status == 200
+	}
+}
+
+Ajax.prototype.init.prototype = Ajax.prototype;
+
+/*-------------借鉴至jQuery----------------------------------------------------------------------------------*/
+
+/*-------------上面的代码还有一种写法，不知道实用不----------------------------------------------------------
+
+var Ajax = function(method, url, async) {
+	return new Ajax.init(method, url, async);
+}
+
+Ajax.init = function(method, url, async) {
+		
+		if (typeof(async) === "undefined")
+			async = true;
+		
+		this.http = new XMLHttpRequest();
+		this.http.open(method, url, async);
+		return this;
+	};
+	
+Ajax.callback = function(func) {
+		this.http.onreadystatechange = func;
+		return this;
+	};
+	
+Ajax.send = function() {
+		this.http.send();
+		return this;
+	};
+	
+Ajax.responseText = function() {
+		return this.http.responseText;
+	};
+
+Ajax.init.prototype = Ajax;
+
+-------------到此为止--------------------------------------------------------------------------------------*/
+
 function clickScrollNext() {
 	// 点击指定位置进行翻页，目前测试中
 	if (click.checked) {
@@ -34,7 +107,40 @@ function displayClick() {
 window.onload = function() {
 	// 我不知道为什么采用(function getBooks() {})(); 这样的方式不行....
 	// 加载所有书籍
+	
+	// 采用新的方式无法正常工作？明日修复
 	(function getBooks() {
+		Ajax("GET", "read.php?operator=128&book=NULL&offset=NULL").callback(
+		function() {
+			if (this.isSuccess) {
+				alert("123");
+				books_buffer = this.responseText.split("|");
+				current_book = books_buffer[0];
+				
+				for (book in books_buffer) {
+					node_li = document.createElement("li");
+					node_li.innerHTML = books_buffer[book];
+					node_li.style = "list-style-type:none";
+					books.appendChild(node_li);
+				}
+			}
+			
+			// 异步加载第一本书
+			if (current_book !== "") {
+				Ajax("GET", "read.php?operator=2&book="+current_book).callback(
+				function() {
+					if (this.isSuccess) {
+						string_buffer = this.responseText;
+						readMain.innerHTML = string_buffer + this.responseText.replace("\n", "<br>");
+					}
+				}).send();
+			}
+		}).send();
+		
+		/*
+		
+		)
+		
 		var xmlhttp = new XMLHttpRequest();
 		var books_buffer = "";
 		
@@ -70,6 +176,7 @@ window.onload = function() {
 				}
 			}
 		}
+		*/
 	}());	
 	
 	// 保存的时候页面获取文件偏移量

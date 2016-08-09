@@ -5,14 +5,37 @@
 <script>
 
 function myclick() {
-var xmlhttp = new XMLHttpRequest();
-xmlhttp.open("GET", "read.php?operator=4&book=1111.txt", true);
-xmlhttp.send();
-
-xmlhttp.onreadystatechange=function() {
-	book.innerHTML += xmlhttp.responseText;
-	}
+	Ajax("GET", "p.php").callback(function() {book.innerHTML = this.responseText;}).send();
 }
+
+var Ajax = function(method, url, async) {
+	return new Ajax.init(method, url, async);
+}
+
+Ajax.init = function(method, url, async) {
+		if (typeof(async) === "undefined")
+			async = true;
+		
+		this.http = new XMLHttpRequest();
+		this.http.open(method, url, async);
+		return this;
+	};
+	
+Ajax.callback = function(func) {
+		this.http.onreadystatechange = func;
+		return this;
+	};
+	
+Ajax.send = function() {
+		this.http.send();
+		return this;
+	};
+	
+Ajax.responseText = function() {
+		return this.http.responseText;
+	};
+	
+Ajax.init.prototype = Ajax;
 
 </script>
 

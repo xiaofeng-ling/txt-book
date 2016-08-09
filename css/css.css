@@ -31,6 +31,17 @@ div.click_css
 	z-index:1;
 }
 
+div.book_main
+{
+	/*内容超出后自动显示上下滑动条*/
+	overflow-y:auto;
+	position:Absolute;
+	top:0px;
+	right:0px;
+	width:80%;
+	height:100%;
+}
+
 body
 {
 	font-family:"微软雅黑", "宋体"
