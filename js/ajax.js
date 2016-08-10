@@ -7,6 +7,7 @@ var tail_end_book = "";
 var head_end_book = "";
 
 /*--------这段代码是借鉴jQuery的，真的是，太精妙了，虽然还有另一种写法，但这种思想才是最棒的！--------------*/
+// 自己封装的并不彻底，无法取得成功状态，再参考jquery
 var Ajax = function(method, url, async) {
 	return new Ajax.prototype.init(method, url, async);
 }
@@ -30,14 +31,6 @@ Ajax.prototype = {
 	send: function() {
 		this.http.send();
 		return this;
-	},
-	
-	responseText: function() {
-		return this.http.responseText;
-	},
-	
-	isSuccess: function() {
-		return this.http.readyState == 4 && this.http.status == 200
 	}
 }
 
@@ -112,8 +105,7 @@ window.onload = function() {
 	(function getBooks() {
 		Ajax("GET", "read.php?operator=128&book=NULL&offset=NULL").callback(
 		function() {
-			if (this.isSuccess) {
-				alert("123");
+			if (this.readyState == 4 && this.status == 200) {
 				books_buffer = this.responseText.split("|");
 				current_book = books_buffer[0];
 				
@@ -129,94 +121,14 @@ window.onload = function() {
 			if (current_book !== "") {
 				Ajax("GET", "read.php?operator=2&book="+current_book).callback(
 				function() {
-					if (this.isSuccess) {
+					if (this.readyState == 4 && this.status == 200) {
 						string_buffer = this.responseText;
 						readMain.innerHTML = string_buffer + this.responseText.replace("\n", "<br>");
 					}
 				}).send();
 			}
 		}).send();
-		
-		/*
-		
-		)
-		
-		var xmlhttp = new XMLHttpRequest();
-		var books_buffer = "";
-		
-		xmlhttp.open("GET", "read.php?operator=128&book=NULL&offset=NULL", true);
-		xmlhttp.send();
-		
-		xmlhttp.onreadystatechange=function() {
-			if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-				books_buffer = xmlhttp.responseText.split("|");
-				current_book = books_buffer[0];
-				
-				for (book in books_buffer) {
-					node_li = document.createElement("li");
-					node_li.innerHTML = books_buffer[book];
-					node_li.style = "list-style-type:none";
-					books.appendChild(node_li);
-				}
-			}
-			
-			// 异步加载第一本书
-			var xmlhttp_first = new XMLHttpRequest();
-			
-			if (current_book !== "") {
-			
-				xmlhttp_first.open("GET", "read.php?operator=2&book="+current_book, true);
-				xmlhttp_first.send();
-				// 页面加载的时候ajax
-				xmlhttp_first.onreadystatechange=function() {
-					if (xmlhttp_first.readyState == 4 && xmlhttp_first.status == 200) {
-						string_buffer = xmlhttp_first.responseText
-						readMain.innerHTML = string_buffer + xmlhttp_first.responseText.replace("\n", "<br>");
-					}
-				}
-			}
-		}
-		*/
 	}());	
-	
-	// 保存的时候页面获取文件偏移量
-	readMain.onmouseup = function() {
-		var selectText = window.getSelection().toString();
-		var pos = 0;
-		
-		// 获取文本并将其显示出来
-		if ((pos = string_buffer.lastIndexOf(selectText)) > 0) {
-			var tempStr1 = readMain.innerHTML.substring(0, pos);
-			var newText = "<span style='background:yellow'>" + selectText + "</span>";
-			var tempStr2 = readMain.innerHTML.substring(pos+selectText.length, string_buffer.replace("\n", "<br>").length);
-			
-			readMain.innerHTML = tempStr1 + newText + tempStr2;
-			
-			if (true == confirm("确认是这段标黄的文本吗？")) {
-				var tempstr = string_buffer.substring(pos, string_buffer.length);
-				
-				offset = function() {
-					var charnum = 0;
-					for (i=pos; i<tempstr.length; i++) {
-						charnum += (string_buffer.charCodeAt(i)>255 ? 3 : 1);
-					}
-					
-					return charnum;
-				}
-				
-				var xmlhttp = new XMLHttpRequest();
-				
-				xmlhttp.open("GET", "read.php?operator=64&book="+current_book+"&offset="+offset, true);
-				xmlhttp.send();
-				
-				xmlhttp.onreadystatechange = function() {
-					if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-						alert("进度已保存，可以安全退出！");
-					}
-				}
-			}
-		}	
-	}
 	
 	// 绑定点击翻页事件
 	form.addEventListener("click", displayClick);
@@ -264,6 +176,19 @@ function wheel(event) {
 		flag = 1;
 		xmlhttp.open("GET", "read.php?operator=2&book="+current_book, true);
 		xmlhttp.send();
+		
+		Ajax("GET", "read.php?operator=2&book="+current_book).callback(
+		function() {
+			if (this.readyState == 4 && this.status == 200) {
+				if (this.reponseText ==== "")
+					tail_end_book = current_book;
+				
+				if (readMain.innerHTML === "") {
+					this.open("")
+				}
+			}
+		}
+		
 		ajax_lock = 1;
 	}
 	
