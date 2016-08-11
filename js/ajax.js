@@ -1,12 +1,9 @@
 // 全局变量
-var flag = 1;
-var string_buffer = "";
-var ajax_lock = 0;
-var current_book = "";
-var tail_end_book = "";
-var head_end_book = "";
+var current_book = "";	// 指向当前书籍
+var tail_end_book = "";	// 指向尾部已结束的书籍
+var head_end_book = "";	// 指向头部已结束的书籍
 
-/*--------这段代码是借鉴jQuery的，真的是，太精妙了，虽然还有另一种写法，但这种思想才是最棒的！--------------*/
+/*--------这段代码是借鉴jQuery的，真是太精妙了，虽然还有另一种写法，但这种思想才是最棒的！--------------*/
 // 自己封装的并不彻底，无法取得成功状态，再参考jquery
 var Ajax = function(method, url, async) {
 	return new Ajax.prototype.init(method, url, async);
@@ -25,10 +22,6 @@ Ajax.prototype = {
 	
 	callback: function(func) {
 		this.http.onreadystatechange = func;
-		return this;
-	},
-	
-	send: function() {
 		this.http.send();
 		return this;
 	}
@@ -72,6 +65,12 @@ Ajax.init.prototype = Ajax;
 
 -------------到此为止--------------------------------------------------------------------------------------*/
 
+/*----------------自己的$()函数，有了这个兼容性会更好--------------------------*/
+
+var $ = function(id) { return document.getElementById(id);}
+
+/*--------------------$()函数结束----------------------------------------------*/
+
 function clickScrollNext() {
 	// 点击指定位置进行翻页，目前测试中
 	if (click.checked) {
@@ -101,7 +100,7 @@ window.onload = function() {
 	// 我不知道为什么采用(function getBooks() {})(); 这样的方式不行....
 	// 加载所有书籍
 	
-	// 采用新的方式无法正常工作？明日修复
+	// 采用新的方式无法正常工作
 	(function getBooks() {
 		Ajax("GET", "read.php?operator=128&book=NULL&offset=NULL").callback(
 		function() {
@@ -115,19 +114,31 @@ window.onload = function() {
 					node_li.style = "list-style-type:none";
 					books.appendChild(node_li);
 				}
-			}
+			} // end if
 			
 			// 异步加载第一本书
 			if (current_book !== "") {
+				// 加载下一页
 				Ajax("GET", "read.php?operator=2&book="+current_book).callback(
 				function() {
 					if (this.readyState == 4 && this.status == 200) {
-						string_buffer = this.responseText;
-						readMain.innerHTML = string_buffer + this.responseText.replace("\n", "<br>");
+						var node = document.createElement("span");
+						node.innerHTML = this.responseText.replace("\n", "<br>");
+						readMain.appendChild(node);
 					}
-				}).send();
-			}
-		}).send();
+				});
+				
+				// 加载上一页
+				Ajax("GET", "read.php?operator=4&book="+current_book).callback(
+				function() {
+					if (this.readyState == 4 && this.status == 200) {
+						var node = document.createElement("span");
+						node.innerHTML = this.responseText.replace("\n", "<br>");
+						readMain.insertBefore(node, readMain.firstChild);
+					}
+				});
+			} // end if
+		});
 	}());	
 	
 	// 绑定点击翻页事件
@@ -172,66 +183,39 @@ function wheel(event) {
 	
 	
 	// 滚动无限加载，目前测试中
-	if ((document.body.scrollHeight - document.body.scrollTop) <= 2000 && delta<0 && !ajax_lock && current_book != tail_end_book) {
-		flag = 1;
+	// 获取下一页
+	if ((document.body.scrollHeight - document.body.scrollTop) <= 2000 && delta<0 && current_book != tail_end_book) {
 		xmlhttp.open("GET", "read.php?operator=2&book="+current_book, true);
 		xmlhttp.send();
 		
 		Ajax("GET", "read.php?operator=2&book="+current_book).callback(
 		function() {
 			if (this.readyState == 4 && this.status == 200) {
-				if (this.reponseText ==== "")
+				if (this.reponseText === "")
 					tail_end_book = current_book;
-				
-				if (readMain.innerHTML === "") {
-					this.open("")
+				else {
+					var node = document.createElement("span");
+					node.innerHTML = xmlhttp.responseText.replace("\n", "<br>");
+					readMain.appendChild(node);
 				}
 			}
-		}
-		
-		ajax_lock = 1;
+		});
 	}
-	
-	if (document.body.scrollTop <= 2000 && delta>0 && !ajax_lock && current_book != head_end_book) {
-		flag = 2;
-		xmlhttp.open("GET", "read.php?operator=4&book="+current_book, true);
-		xmlhttp.send();
-		ajax_lock = 1;
-	}
-	
-	// ajax 回调函数
-	xmlhttp.onreadystatechange=function() {
-		if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-			if (xmlhttp.responseText === "") {
-				if (flag == 1)
-					tail_end_book = current_book;
-				else if (flag == 2)
+	// 获取上一页
+	else if (document.body.scrollTop <= 2000 && current_book != head_end_book) {
+		Ajax("GET", "read.php?operator=4&book="+current_book).callback(
+		function() {
+			if (this.readyState == 4 && this.status == 200) {
+				if (this.reponseText === "")
 					head_end_book = current_book;
-				
-				if (count && readMain.innerHTML === "") {
-				// 如果到达结尾，服务端将不会返回数据，此时需要获取上一页的数据，最多尝试5次
-				xmlhttp.open("GET", "read.php?operator=4&book="+current_book, true);
-				xmlhttp.send();
-				count--;
-				end_book = current_book;
+				else {
+					var node = document.createElement("span");
+					node.innerHTML = xmlhttp.responseText.replace("\n", "<br>");
+					readMain.insertChild(node, readMain.firstChild);
+				}
 			}
-			}
-			
-			
-			
-			string_buffer = xmlhttp.responsetText;
-			var node = document.createElement("div");
-			node.innerHTML = xmlhttp.responseText.replace("\n", "<br>");
-			
-			if (1 == flag)
-				readMain.appendChild(node);
-			else
-				readMain.insertBefore(node, readMain.firstChild);
-			
-			flag = 0;
-			ajax_lock = 0;
-		}
-	}
+		});
+	} // end if
 }
 
 function displayBlock() {
