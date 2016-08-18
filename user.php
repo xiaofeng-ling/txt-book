@@ -1,44 +1,51 @@
 <?php
 
-include "tools.php";
-
 class User
 {
 	private $name;
 	private $prev_offset;
 	private $next_offset;
 	private $books;
-	private $current_book;
-	private $exe_function;
-	private $run_lock;
+	private $sql;
 
 	public function __construct($name)
 	{
 		/*
 		这里添加代码，用于根据name来取得保存的信息，如果目标文件不存在，则创建，并初始化目标文件
 		*/
+		$this->sql = mysql_connect('localhost:3306', 'root', 密码);
+		
+		if (!$this->sql)
+		{
+			die('could not connect: '.mysql_error());
+		}
+		
+		echo 'connect success!\n';
+		
 		$this->name = $name;
+		
 		$this->read_user();
 		$this->current_book = array_keys($this->books)[0];
-		$this->prev_offset = $this->next_offset = $this->books[$this->current_book];
-		$this->exe_function = array();
-		$this->run_lock = 0;
+		$this->prev_offset = $this->books[0]['prev_offset'];
+		$this->next_offset = $this->books[0]['next_offset'];
 	}
 	
 	public function get_next($book, $size)
 	{
-		if (!file_exists($book))
-			return "文件不存在!";
+		$path = '';
+		if (!file_exists($path = get_book_path($book)));
+			die('文件不存在!');
+			
+		if (!array_key_exists($book, $this->books))
+			die('没有这本书！\n');
 		
-		// 切换书籍
-		if (strcmp($this->current_book, $book))
-		{
-			$books[$this->current_book] = $this->next_offset;
-			$this->current_book = $book;
-			$this->next_offset = $this->prev_offset = $this->books[$book];
-		}
-
+		
 		$fp = fopen($book, "r");
+		
+		if (!$fp)
+			die('打开文件失败！');
+		
+		
 		fseek($fp, $this->next_offset);
 		$buffer = fread($fp, $size*4);	// 采用utf-8编码存储的文本文件
 		// 采用mb_substr用于截取中文
@@ -54,18 +61,18 @@ class User
 
 	public function get_prev($book, $size)
 	{
-		if (!file_exists($book))
-			return "文件不存在!";
+		$path = '';
+		if (!file_exists($path = get_book_path($book)));
+			die('文件不存在!');
+			
+		if (!array_key_exists($book, $this->books))
+			die('没有这本书！\n');
 		
-		// 切换书籍
-		if (strcmp($this->current_book, $book))
-		{
-			$books[$this->current_book] = $this->next_offset;
-			$this->current_book = $book;
-			$this->next_offset = $this->prev_offset = $this->books[$book];
-		}
-
+		
 		$fp = fopen($book, "r");
+		
+		if (!$fp)
+			die('打开文件失败！');
 		
 		$offset = 0;
 		$buffer = "";
@@ -99,40 +106,61 @@ class User
 		if (!array_key_exists($book, $this->books))
 			return "没有这本书！";
 		
-		$this->books[$book] = $this->books[$book] - $offset;
+		$this->books[$book]['next_offset'] = $this->books[$book]['next_offset'] - $offset;
 	}
 
-	public function save_user()
+	public function save_books()
 	{
 		/*
-		这里采用合并函数进行打包存储
+		访问数据库，存储书籍
 		*/
-
-		$fp = fopen($this->name, "w+");
-		$key_array_string = array_to_string_key($this->books, "|");
-		fwrite($fp, $key_array_string);
+		
+		if (!$this->sql)
+			die('未连接！\n');
+		
+		$books = json_encode($this->books);
+		
+		if (!$books)
+			die('编码失败！\n');
+		
+		$sql_query = "UPDATE txt_book_users SET books=$books WHERE name=$this->name";
+		
+		mysql_select_db('txt_book');
+		
+		$ret = mysql_query($sql_query, $this->sql);
+		
+		if (!$ret)
+				die('更新数据库失败: '.mysql_error());
+			
+		mysql_free_result($ret);
 
 		fclose($fp);
 		
 	}
 
-	public function read_user()
+	public function read_books()
 	{
 		/*
-		这里打开文件，并从文件中获取足够的数据
+		访问数据库，提取书籍
 		*/
-		if (!file_exists($this->name))
-		{
-			$this->books = array("新手指南"=>0);
-			return 1;
-		}
-
-		$fp = fopen($this->name, "r");
-		$buffer = fread($fp, 10240);
-
-		$this->books = splite_key($buffer, "|");
-		fclose($fp);
-
+		if (!$this->sql)
+			die('未连接！\n');
+		
+		$sql_query = "SELECT books FROM txt_book_users WHERE name=$this->name";
+		
+		mysql_select_db('txt_book');
+		
+		$ret = mysql_query($sql_query, $this->sql);
+		
+		if (!$ret)
+			die('查询失败: '.mysql_error());
+		
+		$this->books = json_decode(mysql_result($ret, 0), true);
+		
+		if (!$this->books)
+			die('获取书籍失败！\n');
+		
+		mysql_free_result($ret);
 	}
 
 	public function add_book($book)
@@ -167,45 +195,38 @@ class User
 		本函数用于返回用户的所有书籍
 		*/
 		$temp = array_keys($this->books);
-		return array_to_string($temp, "|");
+		return json_encode($temp);
 	}
-
-	private function ret_sock($sock, $function)
+	
+	public function get_book_path($book)
 	{
 		/*
-		这里先用buffer变量测试函数，在实际应用中应该采用如下形式
+		本函数用于查询书籍的路径
 		*/
-		$buffer = $function;
-		socket_write($sock, $buffer);
-		socket_close($sock);
+		
+		$sql = mysql_connect('localhost:3306', 'root', 密码);
+		
+		if (!$sql)
+			die('连接失败: '.mysql_error());
+		
+		mysql_select_db('txt_book');
+		
+		$ret = mysql_query("SELECT path FROM txt_book_books WHERE name=$book");
+		
+		if (!ret)
+			die('查询失败：\n'.mysql_error());
+		
+		mysql_close($sql);
+		
+		return mysql_result($ret, 0);
 	}
-
-	public function push_function($sock, $function)
+	
+	public function reset_prev_offset()
 	{
 		/*
-		很简单的函数，将待执行函数压栈
+		本函数重置上一页偏移量
 		*/
-		echo "push_public function exe!\n";
-		array_push($this->exe_function, $this->ret_sock($sock, $function));
-	}
-
-	public function run()
-	{
-		/*
-		开始逐项执行数组中对应的函数，采用锁形式
-		*/
-		if ($this->run_lock)
-			return -1;
-
-		$this->run_lock = 1;
-
-		while (count($this->exe_function))
-		{
-			echo $this->exe_function[0];
-			array_shift($this->exe_function);
-		}
-
-		$this->run_lock = 0;
+		$this->prev_offset = $this->next_offset;
 	}
 
 	public function __destruct()
@@ -214,6 +235,9 @@ class User
 		析构函数，目前不做任何事情
 		*/
 		$this->save_user();
+		
+		if ($this->sql)
+			mysql_close($this->sql);
 	}
 }
 

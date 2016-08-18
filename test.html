@@ -1,46 +1,23 @@
+<!doctype html>
+<meta charset="utf-8">
 <html>
 
 <body>
 
+
 <script>
-
-function myclick() {
-	Ajax("GET", "p.php").callback(function() {book.innerHTML = this.responseText;}).send();
+function cli(){
+	xmlhttp = new XMLHttpRequest();
+	xmlhttp.open("GET", "test.php", true);
+	xmlhttp.onreadystatechange = function(){
+		document.getElementById("a11").innerHTML = xmlhttp.responseText;
+	}
+	xmlhttp.send();
 }
-
-var Ajax = function(method, url, async) {
-	return new Ajax.init(method, url, async);
-}
-
-Ajax.init = function(method, url, async) {
-		if (typeof(async) === "undefined")
-			async = true;
-		
-		this.http = new XMLHttpRequest();
-		this.http.open(method, url, async);
-		return this;
-	};
-	
-Ajax.callback = function(func) {
-		this.http.onreadystatechange = func;
-		return this;
-	};
-	
-Ajax.send = function() {
-		this.http.send();
-		return this;
-	};
-	
-Ajax.responseText = function() {
-		return this.http.responseText;
-	};
-	
-Ajax.init.prototype = Ajax;
-
 </script>
 
-<div id="book"></div>
-<button onclick="myclick()">123
+<button onclick="cli()">123</button>
+<div id="a11"></div>
 
 </body>
 

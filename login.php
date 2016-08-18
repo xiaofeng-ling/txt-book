@@ -4,62 +4,48 @@ ini_set('session.save_path', '/tmp');
 
 session_start();
 
-$ip = "127.0.0.1";
-$port = 9585;
+$error = "";
 
-$error_msg = "";
-
-$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-
-if (!isset($_SESSION['user']))
+function login()
 {
-	if ($_SERVER["REQUEST_METHOD"] == "POST")
+	if (!isset($_SESSION['user']))
 	{
-		if (empty($_POST["name"]) || empty($_POST["password"]))
+		if ($_SERVER["REQUEST_METHOD"] == "POST")
 		{
-			echo "用户名或者密码错误！";
-			exit();
-		}
-		//mysqli_real_escape_string($dbc,trim($_POST['name']));
-		
-		//$name = mysqli_real_escape_string($dbc,trim($_POST['name']));
-		//$passwd = mysqli_real_escape_string($dbc,trim($_POST['name']));
-		
-		$name = trim($_POST['name']);
-		$passwd = trim($_POST['password']);
-		$_SESSION['user'] = trim($_POST['name']);
-
-		//$checksum = sha256($name) & sha256($passwd);
-		$checksum = $name.$passwd;
-		
-		/*
-		进行mysql查询
-		*/
-		
-		socket_connect($socket, $ip, $port);
-		socket_write($socket, "1"."|".$_SESSION['user']);
-		
-		$ret = "";
-		
-		$ret = socket_read($socket, 1024);
-		
-		// 这里判断返回值是不是成功，如果不成功则删除session中的对象，否则跳转页面
-		
-		if (!strcmp($ret, "登录成功!") || !strcmp($ret, "用户已存在，请勿重复登录!"))
-		{
-			header('location: loged.html');
-		}
-		else
-		{
-			unset($_SESSION['user']);
-			echo $ret;
+			if (empty($_POST["name"]) || empty($_POST["password"]))
+				return '用户名或者密码错误！';
+			
+			$sql_connect = mysql_connect('localhost:3306', 'root', 密码);
+			
+			if (!$sql_connect)
+				return '连接失败！: '.mysql_error();
+			
+			$name = mysql_real_escape_string($_POST["name"]);
+			$passwd = mysql_real_escape_string($_POST["password"]);
+			
+			mysql_select_db('txt_book');
+			
+			$sql_query = "SELECT passwd FROM txt_book_users WHERE name=$name";
+			
+			$ret = mysql_query($sql_query, $sql_connect);
+			
+			if (!$ret)
+				return '查询失败: '.mysql_error();
+			
+			if ((int)mysql_result($ret, 0) != (md5($name) & md5($passwd)))
+				return '账号或者密码错误！';
+			
+			$_SESSION['user'] = $name;
+			header('localtion: read.html');
 		}
 	}
+	else
+	{
+		header('location: loged.html');
+	}
 }
-else
-{
-	header('location: loged.html');
-}
+
+$error = login();
 
 ?>
 
@@ -94,10 +80,11 @@ function checkForm()
 
 <body>
 
-<form name="login" action="<?php $_SERVER['PHP_SELF']; ?>" method="post" onsubmit="return checkForm()">
+<form name="login" action="login.php" method="post" onsubmit="return checkForm()">
 用户名:<input type="text" name="name"><br>
 密码:<input type="password" name="password"><br>
 <input type="submit" value="登陆">
+<?php echo "<div>".$error."</div>" ?>
 </form>
 
 </body>
