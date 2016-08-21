@@ -1,17 +1,17 @@
 <?php
-
-//header("Content-Type:text/html;charset='utf-8'");
+require_once("sql.php");
 
 $error = "";
 
 function register()
 {
+	global $sql_user, $sql_passwd;
 	if ($_SERVER["REQUEST_METHOD"] == "POST")
 		{
 			if (empty($_POST["name"]) || empty($_POST["password"]))
 				return '用户名或者密码不符合规则！\n';
 			
-			$sql = mysql_connect('localhost:3306', 'root', 密码);
+			$sql = mysql_connect('localhost:3306', $sql_user, $sql_passwd);
 			
 			if (!$sql)
 			{
@@ -22,8 +22,12 @@ function register()
 			
 			$name = mysql_real_escape_string($_POST["name"]);
 			
-			if ($unique_name = mysql_query("SELECT name FROM txt_book_users WHERE name=$name"))
-				if (!strcmp($name, mysql_result($unique_name, 0)))
+			if (!mysql_query("SET NAMES 'UTF8'"))
+				return "mysql设置编码错误！\n";
+			
+			// 在中文边上加上单引号，否则无法查询
+			if ($unique_name = mysql_query("SELECT name FROM txt_book_users WHERE name='$name'"))
+				if (mysql_num_rows($unique_name))
 					return "用户已存在！\n";
 			
 			$temp_passwd = mysql_real_escape_string($_POST["password"]);

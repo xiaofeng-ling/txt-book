@@ -1,4 +1,5 @@
 <?php
+require_once("sql.php");
 
 class User
 {
@@ -13,7 +14,8 @@ class User
 		/*
 		这里添加代码，用于根据name来取得保存的信息，如果目标文件不存在，则创建，并初始化目标文件
 		*/
-		$this->sql = mysql_connect('localhost:3306', 'root', 密码);
+		global $sql_user, $sql_passwd;
+		$this->sql = mysql_connect('localhost:3306', $sql_user, $sql_passwd);
 		
 		if (!$this->sql)
 		{
@@ -23,6 +25,9 @@ class User
 		echo 'connect success!\n';
 		
 		$this->name = $name;
+		
+		
+		
 		
 		$this->read_user();
 		$this->current_book = array_keys($this->books)[0];
@@ -100,7 +105,7 @@ class User
 	
 	public function save_offset($book, $offset)
 	{
-		if (!file_exists($book))
+		if (!file_exists(get_book_path($book)))
 			return "文件不存在！";
 		
 		if (!array_key_exists($book, $this->books))
@@ -123,7 +128,7 @@ class User
 		if (!$books)
 			die('编码失败！\n');
 		
-		$sql_query = "UPDATE txt_book_users SET books=$books WHERE name=$this->name";
+		$sql_query = "UPDATE txt_book_users SET books='$books' WHERE name='$this->name'";
 		
 		mysql_select_db('txt_book');
 		
@@ -146,7 +151,7 @@ class User
 		if (!$this->sql)
 			die('未连接！\n');
 		
-		$sql_query = "SELECT books FROM txt_book_users WHERE name=$this->name";
+		$sql_query = "SELECT books FROM txt_book_users WHERE name='$this->name'";
 		
 		mysql_select_db('txt_book');
 		
@@ -165,22 +170,20 @@ class User
 
 	public function add_book($book)
 	{
-		if (!file_exists($book))
+		if (!file_exists(get_book_path($book)))
 			return "文件不存在!";
 
 		if (array_key_exists($book, $this->books))
 			return "已存在！";
 
-		$this->books[$book] = 0;
+		$this->books[$book]['next_offset'] = 0;
+		$this->books[$book]['prev_offset'] = 0;
 
 		return "添加成功！\n";
 	}
 
 	public function del_book($book)
 	{
-		if (!file_exists($book))
-			return "文件不存在!";
-
 		if (!array_key_exists($book, $this->books))
 			return "书名不存在!";
 
@@ -204,14 +207,14 @@ class User
 		本函数用于查询书籍的路径
 		*/
 		
-		$sql = mysql_connect('localhost:3306', 'root', 密码);
+		$sql = mysql_connect('localhost:3306', $sql_user, $sql_passwd);
 		
 		if (!$sql)
 			die('连接失败: '.mysql_error());
 		
 		mysql_select_db('txt_book');
 		
-		$ret = mysql_query("SELECT path FROM txt_book_books WHERE name=$book");
+		$ret = mysql_query("SELECT path FROM txt_book_books WHERE name='$book'");
 		
 		if (!ret)
 			die('查询失败：\n'.mysql_error());
