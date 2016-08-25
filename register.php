@@ -33,7 +33,8 @@ function register()
 			$temp_passwd = mysql_real_escape_string($_POST["password"]);
 			$passwd = (md5($name) & md5($temp_passwd));
 			
-			$temp_book = array("新手指南"=>array
+			// 使用urlencode预编码中文，防止json_decode解码出中文无效
+			$temp_book = array(urlencode("新手指南")=>array
 								("prev_offset"=>0, 
 								 "next_offset"=>0));
 			$books = json_encode($temp_book, true);

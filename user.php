@@ -3,10 +3,11 @@ require_once("sql.php");
 
 class User
 {
-	private $name;
-	private $prev_offset;
-	private $next_offset;
-	private $books;
+	private $name = "";
+	private $prev_offset = 0;
+	private $next_offset = 0;
+	private $current_book = "";
+	private $books = array();
 	private $sql;
 
 	public function __construct($name)
@@ -22,30 +23,30 @@ class User
 			die('could not connect: '.mysql_error());
 		}
 		
-		echo 'connect success!\n';
-		
 		$this->name = $name;
 		
+		$this->read_books();
 		
+		// 重设内部指针
+		reset($this->books);
+		// 将第一个key赋予current_book
+		$this->current_book =key($this->books);
 		
-		
-		$this->read_user();
-		$this->current_book = array_keys($this->books)[0];
-		$this->prev_offset = $this->books[0]['prev_offset'];
-		$this->next_offset = $this->books[0]['next_offset'];
+		$this->prev_offset = $this->books[$this->current_book]['prev_offset'];
+		$this->next_offset = $this->books[$this->current_book]['next_offset'];
 	}
 	
 	public function get_next($book, $size)
 	{
 		$path = '';
-		if (!file_exists($path = get_book_path($book)));
+		if (!file_exists($path = $this->get_book_path($book)))
 			die('文件不存在!');
 			
 		if (!array_key_exists($book, $this->books))
-			die('没有这本书！\n');
+			die('没有这本书！');
 		
 		
-		$fp = fopen($book, "r");
+		$fp = fopen($path, "r");
 		
 		if (!$fp)
 			die('打开文件失败！');
@@ -67,14 +68,14 @@ class User
 	public function get_prev($book, $size)
 	{
 		$path = '';
-		if (!file_exists($path = get_book_path($book)));
+		if (!file_exists($path = $this->get_book_path($book)));
 			die('文件不存在!');
 			
 		if (!array_key_exists($book, $this->books))
 			die('没有这本书！\n');
 		
 		
-		$fp = fopen($book, "r");
+		$fp = fopen($path, "r");
 		
 		if (!$fp)
 			die('打开文件失败！');
@@ -105,7 +106,7 @@ class User
 	
 	public function save_offset($book, $offset)
 	{
-		if (!file_exists(get_book_path($book)))
+		if (!file_exists($this->get_book_path($book)))
 			return "文件不存在！";
 		
 		if (!array_key_exists($book, $this->books))
@@ -123,7 +124,15 @@ class User
 		if (!$this->sql)
 			die('未连接！\n');
 		
-		$books = json_encode($this->books);
+		$new_books = array();
+		
+		foreach($this->books as $var)
+		{
+			$new_books[urlencode(key($this->books))] = $var;
+			next($this->books);
+		}
+		
+		$books = json_encode($new_books);
 		
 		if (!$books)
 			die('编码失败！\n');
@@ -135,18 +144,13 @@ class User
 		$ret = mysql_query($sql_query, $this->sql);
 		
 		if (!$ret)
-				die('更新数据库失败: '.mysql_error());
-			
-		mysql_free_result($ret);
-
-		fclose($fp);
-		
+				die("更新数据库失败: ".mysql_error());		
 	}
 
 	public function read_books()
 	{
 		/*
-		访问数据库，提取书籍
+		访问数据库，提取用户的所有书籍
 		*/
 		if (!$this->sql)
 			die('未连接！\n');
@@ -157,20 +161,29 @@ class User
 		
 		$ret = mysql_query($sql_query, $this->sql);
 		
-		if (!$ret)
+		if (!$ret || !mysql_num_rows($ret))
 			die('查询失败: '.mysql_error());
 		
 		$this->books = json_decode(mysql_result($ret, 0), true);
 		
+		$new_books = array();
+		
+		foreach($this->books as $var)
+		{
+			$new_books[urldecode(key($this->books))] = $var;
+			next($this->books);
+		}
+		
+		unset($this->books);
+		$this->books = $new_books;
+		
 		if (!$this->books)
 			die('获取书籍失败！\n');
-		
-		mysql_free_result($ret);
 	}
 
 	public function add_book($book)
 	{
-		if (!file_exists(get_book_path($book)))
+		if (!file_exists($this->get_book_path($book)))
 			return "文件不存在!";
 
 		if (array_key_exists($book, $this->books))
@@ -206,20 +219,21 @@ class User
 		/*
 		本函数用于查询书籍的路径
 		*/
+		global $sql_user, $sql_passwd;
 		
-		$sql = mysql_connect('localhost:3306', $sql_user, $sql_passwd);
+		$book_sql = mysql_connect('localhost:3306', $sql_user, $sql_passwd);
 		
-		if (!$sql)
+		if (!$book_sql)
 			die('连接失败: '.mysql_error());
 		
 		mysql_select_db('txt_book');
 		
 		$ret = mysql_query("SELECT path FROM txt_book_books WHERE name='$book'");
 		
-		if (!ret)
-			die('查询失败：\n'.mysql_error());
+		if (!$ret || !mysql_num_rows($ret))
+			die("查询失败：".mysql_error());
 		
-		mysql_close($sql);
+		mysql_close($book_sql);
 		
 		return mysql_result($ret, 0);
 	}
@@ -237,7 +251,7 @@ class User
 		/*
 		析构函数，目前不做任何事情
 		*/
-		$this->save_user();
+		$this->save_books();
 		
 		if ($this->sql)
 			mysql_close($this->sql);

@@ -3,6 +3,8 @@
 ini_set("session.save_path", "/tmp");
 session_start();
 
+require_once("user.php");
+
 if (!isset($_SESSION['user']))
 {
 	header("Localtion: login.php");
