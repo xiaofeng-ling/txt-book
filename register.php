@@ -15,7 +15,7 @@ function register()
 			
 			if (!$sql)
 			{
-				return 'could not connect: '.mysql_error();
+				return "could not connect: ".mysql_error();
 			}
 			
 			mysql_select_db('txt_book');

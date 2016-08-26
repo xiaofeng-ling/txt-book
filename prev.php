@@ -1,4 +1,5 @@
 <?php
+header("Content-type: text/html; charset='utf-8'");
 
 ini_set("session.save_path", "/tmp");
 session_start();
@@ -16,6 +17,7 @@ if (empty($_GET['book']))
 
 $user = new User($_SESSION['user']);
 
+echo $user->reset_prev_offset($_GET['book']);
 echo $user->get_prev($_GET['book'], 4096);
 
 ?>

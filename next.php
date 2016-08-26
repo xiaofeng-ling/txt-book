@@ -18,7 +18,7 @@ if (empty($_GET['book']))
 
 $user = new User($_SESSION['user']);
 
-echo $user->add_book($_GET['book']);
+echo $user->get_all_books();
 
 echo $user->get_next($_GET['book'], 4096);
 
