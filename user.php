@@ -12,8 +12,7 @@ class User
 		/*
 		这里添加代码，用于根据name来取得保存的信息，如果目标文件不存在，则创建，并初始化目标文件
 		*/
-		global $sql_user, $sql_passwd;
-		$this->sql = mysql_connect('localhost:3306', $sql_user, $sql_passwd);
+		$this->sql = mysql_connect(SQL_ADDRESS, SQL_USERS, SQL_PASSWD);
 		
 		if (!$this->sql)
 		{

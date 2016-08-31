@@ -24,7 +24,6 @@ Ajax.prototype = {
 	callback: function(func) {
 		this.http.onreadystatechange = func;
 		this.http.send();
-		return this;
 	}
 }
 
@@ -101,9 +100,14 @@ window.onload = function() {
     // 我不知道为什么采用(function getBooks() {})(); 这样的方式不行....
     // 加载所有书籍
     (function getBooks() {
-        Ajax("GET", "read.php?operator=128&book=NULL&offset=NULL").callback(function() {
+        Ajax("GET", "getbooks.php").callback(function() {
             if (this.readyState == 4 && this.status == 200) {
-                books_buffer = this.responseText.split("|");
+                books_buffer = JSON.parse(this.responseText);
+				
+				for (i=0; i<books_buffer.length; i++) {
+					books_buffer[i] = decodeURI(books_buffer[i]);
+				}
+				
                 current_book = books_buffer[0];
 
                 for (book in books_buffer) {
@@ -116,7 +120,7 @@ window.onload = function() {
             // 异步加载第一本书
             if (current_book !== "") {
                 // 加载下一页
-                Ajax("GET", "read.php?operator=2&book="+current_book).callback(function() {
+                Ajax("GET", "next.php?book="+current_book).callback(function() {
                     if (this.readyState == 4 && this.status == 200) {
                         var node = document.createElement("span");
                         node.innerHTML = this.responseText.replace("\n", "<br>");
@@ -125,7 +129,7 @@ window.onload = function() {
                 });
 
                 // 加载上一页
-                Ajax("GET", "read.php?operator=4&book="+current_book).callback(function() {
+                Ajax("GET", "prev.php?book="+current_book).callback(function() {
                     if (this.readyState == 4 && this.status == 200) {
                         var node = document.createElement("span");
                         node.innerHTML = this.responseText.replace("\n", "<br>");
@@ -150,10 +154,12 @@ window.onload = function() {
         if (true == confirm("确认切换至小说：" + e.target.innerHTML)) {
             current_book = e.target.innerHTML;
             $("readMain").innerHTML = "";
-            tail_end_book = head_end_book = ""; (function() {
+            tail_end_book = head_end_book = ""; 
+			
+			(function() {
                 if (current_book !== "") {
                     // 加载下一页
-                    Ajax("GET", "read.php?operator=2&book="+current_book).callback(function() {
+                    Ajax("GET", "next.php?book="+current_book).callback(function() {
                         if (this.readyState == 4 && this.status == 200) {
                             var node = document.createElement("span");
                             node.innerHTML = this.responseText.replace("\n", "<br>");
@@ -162,7 +168,7 @@ window.onload = function() {
                     });
 
                     // 加载上一页
-                    Ajax("GET", "read.php?operator=4&book="+current_book).callback(function() {
+                    Ajax("GET", "prev.php?book="+current_book).callback(function() {
                         if (this.readyState == 4 && this.status == 200) {
                             var node = document.createElement("span");
                             node.innerHTML = this.responseText.replace("\n", "<br>");
@@ -170,7 +176,8 @@ window.onload = function() {
                         }
                     });
                 };
-            } ());
+            } ()); // end function()
+			
         } // end onclick()
     }
 }
@@ -200,7 +207,7 @@ function wheel(event) {
 		// 防止滚动一下鼠标滚轮多次请求
 		ajax_lock = 1;
 		
-		Ajax("GET", "read.php?operator=2&book="+current_book).callback(
+		Ajax("GET", "next.php?book="+current_book).callback(
 		function() {
 			if (this.readyState == 4 && this.status == 200) {
 				if (this.responseText.length == 0)
@@ -220,7 +227,7 @@ function wheel(event) {
 	else if (document.body.scrollTop <= 400 && current_book != head_end_book && !ajax_lock) {
 		ajax_lock = 1;
 		
-		Ajax("GET", "read.php?operator=4&book="+current_book).callback(
+		Ajax("GET", "prev.php?book="+current_book).callback(
 		function() {
 			if (this.readyState == 4 && this.status == 200) {
 				if (this.responseText.length == 0)

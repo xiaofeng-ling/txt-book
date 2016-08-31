@@ -12,13 +12,11 @@ function login()
 	if (!isset($_SESSION['user']))
 	{
 		if ($_SERVER["REQUEST_METHOD"] == "POST")
-		{
-			global $sql_user, $sql_passwd;
-			
+		{			
 			if (empty($_POST["name"]) || empty($_POST["password"]))
 				return '用户名或者密码错误！';
 			
-			$sql_connect = mysql_connect('localhost:3306', $sql_user, $sql_passwd);
+			$sql_connect = mysql_connect(SQL_ADDRESS, SQL_USERS, SQL_PASSWD);
 			
 			if (!$sql_connect)
 				return '连接失败！: '.mysql_error();

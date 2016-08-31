@@ -5,13 +5,12 @@ $error = "";
 
 function register()
 {
-	global $sql_user, $sql_passwd;
 	if ($_SERVER["REQUEST_METHOD"] == "POST")
 		{
 			if (empty($_POST["name"]) || empty($_POST["password"]))
 				return '用户名或者密码不符合规则！\n';
 			
-			$sql = mysql_connect('localhost:3306', $sql_user, $sql_passwd);
+			$sql = mysql_connect(SQL_ADDRESS, SQL_USERS, SQL_PASSWD);
 			
 			if (!$sql)
 			{

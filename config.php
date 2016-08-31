@@ -55,7 +55,9 @@ function register()
 					      DEFAULT CHARSET=utf8"))
 			return "书籍书籍表创建失败！".mysql_error();
 		
-		if (!fwrite($fp, "<?php $sql_address='$address'; $sql_user='$user'; $sql_passwd='$passwd';?>"))
+		if (!fwrite($fp, "<?php define(\"SQL_ADDRESS\", \"$address\"); 
+								define(\"SQL_USER\", \"$user\"); 
+								define(\"SQL_ADDRESS\", \"$passwd\");?>"))
 			return "写入文件失败！\n";
 		
 		fclose($fp);	
