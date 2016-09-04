@@ -5,19 +5,18 @@ require_once("../sql.php");
 $ret = '';
 
 function upload() 
-{
-	global $sql_user, $sql_passwd;
-	
+{	
 	if (!isset($_FILES["file"]))
 		return "请上传txt文件！\n";
-	
+
 	if ($_FILES["file"]["error"] > 0)
 		return "上传文件出错！\n";
 	
 	if ($_FILES["file"]["type"] != "text/plain")
 		return "请上传txt文件！\n";
 	
-	$filename = $_FILES["file"]["name"];
+	// 采用urlencode存储文件名，方便前台获取所有书籍
+	$filename = urlencode($_FILES["file"]["name"]);
 	
 	if (file_exists("../txt/" . $filename))
 		return "文件已存在！\n";
@@ -26,7 +25,7 @@ function upload()
 		return "文件太大，请上传10M以下的文件！\n";
 	
 	// mysql相关
-	$sql = mysql_connect("localhost:3306", $sql_user, $sql_passwd);
+	$sql = mysql_connect(SQL_ADDRESS, SQL_USERS, SQL_PASSWD);
 	
 	if (!$sql)
 		return "上传文件失败！\n";
@@ -37,7 +36,7 @@ function upload()
 	
 	// 转换文件编码
 	$fp = fopen("../txt/" . $filename, "r+");
-	
+
 	if (!$fp)
 		return "上传文件出错！\n";
 	

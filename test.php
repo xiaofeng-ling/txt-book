@@ -1,17 +1,6 @@
 <?php
-header("Content-Type: text/html; charset='utf-8'");
-
-ini_set("session.save_path", "/tmp");
-session_start();
-
 require_once("user.php");
 
-if (!isset($_SESSION['user']))
-{
-	header("Localtion: login.php");
-	die('用户未登陆!');
-}
-
-$user = new User($_SESSION['user']);
-echo $user->get_books();
+$user = new User("123");
+echo $user->get_prev('ttt.txt', 1024);
 ?>

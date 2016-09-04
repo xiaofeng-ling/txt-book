@@ -97,13 +97,37 @@ class User
 	
 	public function save_offset($book, $offset)
 	{
-		if (!file_exists($this->get_book_path($book)))
+		$path = "";
+		$buffer = "";
+		
+		if (!file_exists($path = $this->get_book_path($book)))
 			return "文件不存在！";
 		
 		if (!array_key_exists($book, $this->books))
 			return "没有这本书！";
 		
+		if ($this->books[$book]['next_offset'] == $offset)
+			return "保存成功！";
+		
+		$fp = fopen($path, "r");
+		
+		if (!$fp)
+			return('打开文件失败！');
+		
+		fseek($fp, $this->books[$book]['next_offset'] - $offset);
+		
+		$buffer = fread($fp, $this->books[$book]['next_offset'] - $offset);
+		
+		// 防止解码失败
+		while(!utf8_decode($buffer))
+			// 去掉开头第一个字符
+			$buffer = substr($buffer, 1);
+				
+		$offset = strlen($buffer);
+		
 		$this->books[$book]['next_offset'] = $this->books[$book]['next_offset'] - $offset;
+		
+		return "保存成功！";
 	}
 
 	public function save_books()
@@ -180,7 +204,7 @@ class User
 		
 		$this->books[$book] = Array("next_offset"=>0, "prev_offset"=>0);
 
-		return "添加成功！\n";
+		return "添加书籍《".$book."》成功！\n";
 	}
 
 	public function del_book($book)
@@ -207,24 +231,6 @@ class User
 		return json_encode($all_book);
 	}
 	
-	public function get_book_path($book)
-	{
-		/*
-		本函数用于查询书籍的路径
-		*/
-		if (!$this->sql)
-			die('未连接');
-		
-		mysql_select_db('txt_book');
-		
-		$ret = mysql_query("SELECT path FROM txt_book_books WHERE name='$book'");
-		
-		if (!$ret || !mysql_num_rows($ret))
-			die("查询失败：".mysql_error());
-		
-		return mysql_result($ret, 0);
-	}
-	
 	public function reset_prev_offset($book)
 	{
 		/*
@@ -234,18 +240,43 @@ class User
 			return "书名不存在!";
 		
 		$this->books[$book]['prev_offset'] = $this->books[$book]['next_offset'];
-		return "重置成功！\n";
+		return "重置成功！";
 	}
 
 	public function __destruct()
 	{
 		/*
-		析构函数，目前不做任何事情
+		析构函数
 		*/
 		$this->save_books();
 		
 		if ($this->sql)
 			mysql_close($this->sql);
+	}
+	
+	/* private function() */
+	private function get_book_path($book)
+	{
+		/*
+		本函数用于查询书籍的路径
+		*/
+		if (!$this->sql)
+			die('未连接');
+		
+		mysql_select_db('txt_book');
+		
+		$book = urlencode($book);
+		
+		$ret = mysql_query("SELECT path FROM txt_book_books WHERE name='$book'");
+		
+		if (!$ret)
+			die("查询失败：".mysql_error());
+		
+		if (!mysql_num_rows($ret))
+			die("书籍不存在！\n");
+		
+		// 解码由urlencode编码后的数据
+		return mysql_result($ret, 0);
 	}
 }
 
