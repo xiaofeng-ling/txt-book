@@ -3,6 +3,7 @@ var current_book = "";	// 指向当前书籍
 var tail_end_book = "";	// 指向尾部已结束的书籍
 var head_end_book = "";	// 指向头部已结束的书籍
 var ajax_lock = 0;
+var operator_flag = 0;
 
 /*--------这段代码是借鉴jQuery的，真是太精妙了，虽然还有另一种写法，但这种思想才是最棒的！--------------*/
 // 自己封装的并不彻底，无法取得成功状态，再参考jquery
@@ -75,61 +76,34 @@ window.onload = function() {
     getBooks(true);
 
 	window.addEventListener("scroll", wheel);
+	$("feature").addEventListener("mousemove", displayBlock);
+	$("feature").addEventListener("mouseout", displayNone);
+	$("setting").addEventListener("mousemove", displayBlock);
+	$("setting").addEventListener("mouseout", displayNone);
+	$("books").addEventListener("click", switch_book);
+	$("add").addEventListener("click", display_all_books);
+	$("operator").addEventListener("click", operator_set);
+	$("all_books").addEventListener("click", add_book);
+	$("all_books").addEventListener("mouseout", function(){$("all_books").style="display:none";});
+	$("saveButton").addEventListener("click", save_offset);
+}
 
-    // 用于切换小说
-    $("books").onclick = function(e) {
-        if (true == confirm("确认切换至小说：" + e.target.innerHTML)) {
-            current_book = e.target.innerHTML;
-            $("readMain").innerHTML = "";
-            tail_end_book = head_end_book = ""; 
-			
-			(function() {
-                if (current_book !== "") {
-					// 重置prev_offset
-					Ajax("GET", "init.php?book="+current_book).callback(function() {
-					if (this.readyState == 4 && this.status == 200) {
-						if (this.responseText == "重置成功！")
-							;
-						else {
-							alert("初始化失败！\n");
-							return -1;
-						}
-					}
-					});
-					
-                    // 加载下一页
-                    load_next();
-
-                    // 加载上一页
-                    load_prev();
-                };
-            } ()); // end function()
-			
-        } // end onclick()
-    }
-	
-	$("all_books").onclick = function(e) {
-		if (true == confirm("确认增加小说《"+e.target.innerHTML + "》？")) {
-			Ajax("GET", "addbook.php?book=" + e.target.innerHTML).callback(
-				function() {
-					if (this.readyState == 4 && this.status == 200) {
-						alert(this.responseText);
-						getBooks(false);
-					}
-				}
-			)
-		}
-	}	
+window.onbeforeunload = function() {
+	save_offset();
+	return "您的进度将被保存";
 }
 
 function getBooks(flag) {
-        Ajax("GET", "getbooks.php").callback(function() {
+        Ajax("GET", "getbooks.php", false).callback(function() {
 			if (this.responseText == "用户未登陆") {
 				$("readMain").innerHTML = this.responseText;
 				return -1;
 			}
 			
             if (this.readyState == 4 && this.status == 200) {
+				// 我不知道为什么不加这一句在首次页面载入完成后使用保存函数会提示找不到length属性
+				$("readMain").innerHTML = "";
+				
                 books_buffer = JSON.parse(this.responseText);
 				
 				for (i=0; i<books_buffer.length; i++) {
@@ -239,7 +213,7 @@ function load_next() {
 					tail_end_book = current_book;
 				else {
 					var node = document.createElement("span");
-					node.innerHTML = this.responseText.replace("\n", "<br>");
+					node.innerHTML = this.responseText.replace(/\r*\n+/g, "<br>");
 					$("readMain").appendChild(node);
 				}
 			}
@@ -260,7 +234,7 @@ function load_prev() {
 					scroll_pos = document.body.scrollHeight - document.body.scrollTop;
 					
 					var node = document.createElement("span");
-					node.innerHTML = this.responseText.replace("\n", "<br>");
+					node.innerHTML = this.responseText.replace(/\r*\n+/g, "<br>");
 					$("readMain").insertBefore(node, readMain.firstChild);
 				}
 				
@@ -277,12 +251,21 @@ function save_offset() {
 	var child_element = $("readMain").childNodes;
 	var utf8_bytes = 0;
 	
-	for (var i=0; i<child_element.length; i++) {
-		// 获取当前滚动条位置的元素
-		if (child_element[i].offsetTop < document.body.scrollTop && child_element[i].offsetTop + child_element[i].offsetHeight > document.body.scrollTop) {
-			console.log(child_element[i].innerHTML);
-			for (; i<child_element.length; i++) {
-				utf8_bytes += calc_utf8_bytes(child_element[i].innerHTML);
+	if (document.body.scrollTop == 0) {
+		for (var i=0; i<child_element.length; i++) {
+				if (child_element[i].innerHTML != "")
+					utf8_bytes += calc_utf8_bytes(child_element[i].innerHTML);
+			}
+	}
+			
+	else {
+		for (var i=0; i<child_element.length; i++) {
+			// 获取当前滚动条位置的元素
+			if (child_element[i].offsetTop < document.body.scrollTop && child_element[i].offsetTop + child_element[i].offsetHeight > document.body.scrollTop) {
+				for (; i<child_element.length; i++) {
+					if (child_element[i].innerHTML != "")
+						utf8_bytes += calc_utf8_bytes(child_element[i].innerHTML);
+				}
 			}
 		}
 	}
@@ -296,17 +279,19 @@ function save_offset() {
 				}
 				else if (true == confirm("保存失败，需要再试一次吗？"))
 					save_offset();
+				
+				return 0;
 			}
 		}
 	)
 }
 
-function calc_utf8_bytes(string) {
+function calc_utf8_bytes(str) {
 	// 本函数用于计算utf8码所占字节数	
 	var bytes = 0;
 	
-	for (var i=0; i<string.length; i++) {
-		var value = string.charCodeAt(i);
+	for (var i=0; i<str.length; i++) {
+		var value = str.charCodeAt(i);
 		
 		if (value < 0x080)
 			bytes += 1;
@@ -317,4 +302,83 @@ function calc_utf8_bytes(string) {
 	}
 	
 	return bytes;
+}
+
+function operator_set() {
+	if (operator_flag)
+		$("operator").innerHTML = "切换模式";
+	else
+		$("operator").innerHTML = "删除模式";
+	
+	operator_flag = !operator_flag;
+}
+
+function switch_book(e) {
+	e = e || window.event;
+	
+	if (operator_flag)
+		del_book(e);
+	else
+		change(e);
+}
+
+function change(e) {
+	if (true == confirm("确认切换至小说：" + e.target.innerHTML)) {
+		current_book = e.target.innerHTML;
+		$("readMain").innerHTML = "";
+		tail_end_book = head_end_book = ""; 
+		
+		(function() {
+			if (current_book !== "") {
+				// 重置prev_offset
+				Ajax("GET", "init.php?book="+current_book).callback(function() {
+				if (this.readyState == 4 && this.status == 200) {
+					if (this.responseText == "重置成功！")
+						;
+					else {
+						alert("初始化失败！\n");
+						return -1;
+					}
+				}
+				});
+				
+				// 加载下一页
+				load_next();
+
+				// 加载上一页
+				load_prev();
+			};
+		} ()); // end function()
+		
+	}
+}
+
+function del_book(e) {
+	if (true == confirm("确认删除小说：" + e.target.innerHTML)) {
+		(function() {
+			Ajax("GET", "deletebook.php?book="+e.target.innerHTML).callback(function() {
+				if (this.readyState == 4 && this.status == 200) {
+					alert(this.responseText);
+					getBooks(current_book == e.target.innerHTML);
+					
+					return 1;
+				}
+			});
+		}());
+	}
+}
+
+function add_book(e) {
+	e = e || window.event;
+	
+	if (true == confirm("确认增加小说《"+e.target.innerHTML + "》？")) {
+		Ajax("GET", "addbook.php?book=" + e.target.innerHTML).callback(
+			function() {
+				if (this.readyState == 4 && this.status == 200) {
+					alert(this.responseText);
+					getBooks(false);
+				}
+			}
+		)
+	}
 }

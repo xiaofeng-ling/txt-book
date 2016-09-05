@@ -46,7 +46,7 @@ div.all_books_style
 {
 	/*内容超出后自动显示上下滑动条*/
 	overflow-y:auto;
-	position:Absolute;
+	position:fixed;
 	top:20%;
 	right:20%;
 	width:60%;
