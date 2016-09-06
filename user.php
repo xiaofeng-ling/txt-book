@@ -117,14 +117,11 @@ class User
 		fseek($fp, $this->books[$book]['next_offset'] - $offset);
 		
 		$buffer = fread($fp, $this->books[$book]['next_offset'] - $offset);
-		
-		// 防止解码失败
-		while(!utf8_decode($buffer))
+		// 防止出现乱码
+		while(strlen($buffer) != strlen(mb_substr($buffer, 0, $offset, 'utf-8')))
 			// 去掉开头第一个字符
 			$buffer = substr($buffer, 1);
-				
 		$offset = strlen($buffer);
-		
 		$this->books[$book]['next_offset'] = $this->books[$book]['next_offset'] - $offset;
 		
 		return "保存成功！";
@@ -224,9 +221,9 @@ class User
 		*/
 		$temp = array_keys($this->books);
 		$all_book = array();
-		foreach($temp as $value)
+		for($i=0; $i<count($temp); $i++)
 		{
-			array_push($all_book, urlencode($value));
+			array_push($all_book, urlencode($temp[$i]));
 		}
 		return json_encode($all_book);
 	}
@@ -275,7 +272,7 @@ class User
 		if (!mysql_num_rows($ret))
 			die("书籍不存在！\n");
 		
-		// 解码由urlencode编码后的数据
+		// 返回实际路径
 		return mysql_result($ret, 0);
 	}
 }

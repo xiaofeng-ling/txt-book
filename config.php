@@ -9,7 +9,7 @@ function register()
 		if (empty($_POST["address"]) || empty($_POST["name"]) || empty($_POST["password"]))
 			return "输入不能为空！";
 		
-		$fp = fopen("sqlllll.php", "w");
+		$fp = fopen("sql.php", "w");
 		
 		if (!$fp)
 			return "写入文件失败！\n";
@@ -26,10 +26,10 @@ function register()
 		if (!mysql_query("SET NAMES 'UTF8'"))
 			return "mysql设置编码错误！\n";
 		
-		if (!mysql_query("CREATE DATABASE txt_book1 DEFAULT CHARACTER SET utf8"))
+		if (!mysql_query("CREATE DATABASE txt_book DEFAULT CHARACTER SET utf8"))
 			return "数据库创建失败！".mysql_error();
 		
-		mysql_select_db("txt_book1");
+		mysql_select_db("txt_book");
 		
 		if (!mysql_query("CREATE TABLE txt_book_users(id int(11) NOT NULL AUTO_INCREMENT,
 						name varchar(255) NOT NULL,
@@ -56,8 +56,8 @@ function register()
 			return "书籍书籍表创建失败！".mysql_error();
 		
 		if (!fwrite($fp, "<?php define(\"SQL_ADDRESS\", \"$address\"); 
-								define(\"SQL_USER\", \"$user\"); 
-								define(\"SQL_ADDRESS\", \"$passwd\");?>"))
+								define(\"SQL_USERS\", \"$user\"); 
+								define(\"SQL_PASSWD\", \"$passwd\");?>"))
 			return "写入文件失败！\n";
 		
 		fclose($fp);	

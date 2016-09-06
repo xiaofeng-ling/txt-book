@@ -84,7 +84,7 @@ window.onload = function() {
 	$("add").addEventListener("click", display_all_books);
 	$("operator").addEventListener("click", operator_set);
 	$("all_books").addEventListener("click", add_book);
-	$("all_books").addEventListener("mouseout", function(){$("all_books").style="display:none";});
+	//$("all_books").addEventListener("mouseout", function(){$("all_books").style="display:none";});
 	$("saveButton").addEventListener("click", save_offset);
 }
 
@@ -94,7 +94,7 @@ window.onbeforeunload = function() {
 }
 
 function getBooks(flag) {
-        Ajax("GET", "getbooks.php", false).callback(function() {
+        Ajax("GET", "getbooks.php").callback(function() {
 			if (this.responseText == "用户未登陆") {
 				$("readMain").innerHTML = this.responseText;
 				return -1;
@@ -212,9 +212,12 @@ function load_next() {
 				if (this.responseText.length == 0)
 					tail_end_book = current_book;
 				else {
-					var node = document.createElement("span");
-					node.innerHTML = this.responseText.replace(/\r*\n+/g, "<br>");
-					$("readMain").appendChild(node);
+					// 将字符串分割为更小的长度以增加保存记录精度
+					for (i=0; i<this.responseText.length/1024; i++) {
+						var node = document.createElement("span");
+						node.innerHTML = this.responseText.substr(i*1024, (i+1)*1024).replace(/\r*\n+/g, "<br>");
+						$("readMain").appendChild(node);
+					}
 				}
 			}
 			
@@ -232,10 +235,13 @@ function load_prev() {
 					head_end_book = current_book;
 				else {
 					scroll_pos = document.body.scrollHeight - document.body.scrollTop;
-					
-					var node = document.createElement("span");
-					node.innerHTML = this.responseText.replace(/\r*\n+/g, "<br>");
-					$("readMain").insertBefore(node, readMain.firstChild);
+
+					// 将字符串分割为更小的长度以增加保存记录精度
+					for (i=0; i<this.responseText.length/1024; i++) {
+						var node = document.createElement("span");
+						node.innerHTML = this.responseText.substr(i*1024, (i+1)*1024).replace(/\r*\n+/g, "<br>");
+						$("readMain").insertBefore(node, readMain.firstChild);
+					}
 				}
 				
 				// 在我的chrome浏览器上，加载向上页面后滚动条不会自动调整位置，于是只能通过这样很是模糊的代码来解决
@@ -254,7 +260,7 @@ function save_offset() {
 	if (document.body.scrollTop == 0) {
 		for (var i=0; i<child_element.length; i++) {
 				if (child_element[i].innerHTML != "")
-					utf8_bytes += calc_utf8_bytes(child_element[i].innerHTML);
+					utf8_bytes += calc_utf8_bytes(child_element[i].innerHTML.replace(/<br>/g, "\n"));
 			}
 	}
 			
@@ -264,7 +270,7 @@ function save_offset() {
 			if (child_element[i].offsetTop < document.body.scrollTop && child_element[i].offsetTop + child_element[i].offsetHeight > document.body.scrollTop) {
 				for (; i<child_element.length; i++) {
 					if (child_element[i].innerHTML != "")
-						utf8_bytes += calc_utf8_bytes(child_element[i].innerHTML);
+						utf8_bytes += calc_utf8_bytes(child_element[i].innerHTML.replace(/<br>/g, "\n"));
 				}
 			}
 		}
