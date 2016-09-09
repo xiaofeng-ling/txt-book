@@ -215,12 +215,12 @@ function load_next() {
 					// 将字符串分割为更小的长度以增加保存记录精度
 					for (i=0; i<this.responseText.length/1024; i++) {
 						var node = document.createElement("span");
-						node.innerHTML = this.responseText.substr(i*1024, (i+1)*1024).replace(/\r*\n+/g, "<br>");
+						node.innerHTML = this.responseText.substr(i*1024, (i+1)*1024).replace(/</g, "&#60").replace(/\r*\n+/g, "<br>");
 						$("readMain").appendChild(node);
 					}
 				}
 			}
-			
+
 			ajax_lock = 0;
 		});
 }
@@ -237,11 +237,17 @@ function load_prev() {
 					scroll_pos = document.body.scrollHeight - document.body.scrollTop;
 
 					// 将字符串分割为更小的长度以增加保存记录精度
-					for (i=0; i<this.responseText.length/1024; i++) {
+					for (i=1; i<this.responseText.length/1024; i++) {
 						var node = document.createElement("span");
-						node.innerHTML = this.responseText.substr(i*1024, (i+1)*1024).replace(/\r*\n+/g, "<br>");
-						$("readMain").insertBefore(node, readMain.firstChild);
+						node.innerHTML = this.responseText.substr(i*-1024, 1024).replace(/</g, "&#60").replace(/\r*\n+/g, "<br>");
+$("readMain").insertBefore(node, readMain.firstChild);
 					}
+					
+					// 最后再填入不足1024的部分
+					var cutOut = this.responseText.length%1024 == 0 ? 1024 : this.responseText.length%1024;
+					var node = document.createElement("span");
+					node.innerHTML = this.responseText.substr((i+1)*-1024, cutOut).replace(/</g, "&#60").replace(/\r*\n+/g, "<br>");
+					$("readMain").insertBefore(node, readMain.firstChild);
 				}
 				
 				// 在我的chrome浏览器上，加载向上页面后滚动条不会自动调整位置，于是只能通过这样很是模糊的代码来解决
@@ -295,7 +301,7 @@ function save_offset() {
 function calc_utf8_bytes(str) {
 	// 本函数用于计算utf8码所占字节数	
 	var bytes = 0;
-	
+/*	
 	for (var i=0; i<str.length; i++) {
 		var value = str.charCodeAt(i);
 		
@@ -306,6 +312,8 @@ function calc_utf8_bytes(str) {
 		else
 			bytes += 3;
 	}
+*/
+	bytes = encodeURIComponent(str).replace(/%.{2}/ig, 'U').length;
 	
 	return bytes;
 }

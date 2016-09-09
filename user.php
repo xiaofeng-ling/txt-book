@@ -69,7 +69,6 @@ class User
 		if (!$fp)
 			die('打开文件失败！');
 		
-		$offset = 0;
 		$buffer = "";
 		$prev_offset = $this->books[$book]['prev_offset'];
 
@@ -85,12 +84,11 @@ class User
 		}		
 
 		// 倒序提取字符
-		$ret = mb_substr($buffer, -$size, $size, "utf-8");
-		
+		$ret = mb_substr($buffer, $size*-1, $size, "utf-8");
+
 		$prev_offset -= strlen($ret);
 		$prev_offset = $prev_offset > 0 ? $prev_offset : 0;
 		$this->books[$book]['prev_offset'] = $prev_offset;
-		
 		fclose($fp);
 		return $ret;
 	}
@@ -117,10 +115,13 @@ class User
 		fseek($fp, $this->books[$book]['next_offset'] - $offset);
 		
 		$buffer = fread($fp, $this->books[$book]['next_offset'] - $offset);
-		// 防止出现乱码
-		while(strlen($buffer) != strlen(mb_substr($buffer, 0, $offset, 'utf-8')))
-			// 去掉开头第一个字符
-			$buffer = substr($buffer, 1);
+		// 防止出现乱码,根据UTF-8规则判断判断
+		// PS: utf-8编码规则 如果一个字符是10xx xxxx 开头表明它是处于一个多字节的编码中，由此可循环直到出现其他的编码头
+		$i = 0;
+		while(($buffer[0] & 0xC0) == 0x80)
+			$i++;
+		// 去掉开头第一个字符
+		$buffer = substr($buffer, $i);
 		$offset = strlen($buffer);
 		$this->books[$book]['next_offset'] = $this->books[$book]['next_offset'] - $offset;
 		
