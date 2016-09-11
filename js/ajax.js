@@ -248,10 +248,10 @@ $("readMain").insertBefore(node, readMain.firstChild);
 					var node = document.createElement("span");
 					node.innerHTML = this.responseText.substr((i+1)*-1024, cutOut).replace(/</g, "&#60").replace(/\r*\n+/g, "<br>");
 					$("readMain").insertBefore(node, readMain.firstChild);
-				}
 				
-				// 在我的chrome浏览器上，加载向上页面后滚动条不会自动调整位置，于是只能通过这样很是模糊的代码来解决
-				document.body.scrollTop = document.body.scrollHeight - scroll_pos;
+					// 在我的chrome浏览器上，加载向上页面后滚动条不会自动调整位置，于是只能通过这样很是模糊的代码来解决
+					document.body.scrollTop = document.body.scrollHeight - scroll_pos;
+				}
 			}
 			
 			ajax_lock = 0;
@@ -268,8 +268,7 @@ function save_offset() {
 				if (child_element[i].innerHTML != "")
 					utf8_bytes += calc_utf8_bytes(child_element[i].innerHTML.replace(/<br>/g, "\n"));
 			}
-	}
-			
+	}		
 	else {
 		for (var i=0; i<child_element.length; i++) {
 			// 获取当前滚动条位置的元素

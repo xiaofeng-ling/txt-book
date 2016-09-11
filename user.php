@@ -114,16 +114,16 @@ class User
 		
 		fseek($fp, $this->books[$book]['next_offset'] - $offset);
 		
-		$buffer = fread($fp, $this->books[$book]['next_offset'] - $offset);
+		$buffer = fread($fp, $offset);
+
 		// 防止出现乱码,根据UTF-8规则判断判断
-		// PS: utf-8编码规则 如果一个字符是10xx xxxx 开头表明它是处于一个多字节的编码中，由此可循环直到出现其他的编码头
-		$i = 0;
-		while(($buffer[0] & 0xC0) == 0x80)
-			$i++;
-		// 去掉开头第一个字符
-		$buffer = substr($buffer, $i);
+		$buffer = mb_substr($buffer, $offset*-1, $offset, 'utf-8');
+
 		$offset = strlen($buffer);
-		$this->books[$book]['next_offset'] = $this->books[$book]['next_offset'] - $offset;
+
+		$next_offset = $this->books[$book]['next_offset'] - $offset;
+		
+		$this->books[$book]['next_offset'] = $next_offset > 0 ? $next_offset : 0;
 		
 		return "保存成功！";
 	}

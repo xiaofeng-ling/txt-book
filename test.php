@@ -1,9 +1,8 @@
 <?php
-require_once("user.php");
+$str = "中文";
 
-$book = "111.txt";
-$offset = 0;
-
-$user = new User("123");
-echo $user->get_prev($book, 4096);
+for ($i=0; $i<strlen($str); $i++)
+{
+    echo (substr($str, $i, $i+1) & hex2bin('C0')) == hex2bin('80') ? 1: 0;
+}
 ?>
