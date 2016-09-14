@@ -117,7 +117,7 @@ class User
 		$buffer = fread($fp, $offset);
 
 		// 防止出现乱码,根据UTF-8规则判断判断
-		$buffer = mb_substr($buffer, $offset*-1, $offset, 'utf-8');
+		$buffer = mb_substr($buffer, $offset/3*-1, $offset, 'utf-8');
 
 		$offset = strlen($buffer);
 
