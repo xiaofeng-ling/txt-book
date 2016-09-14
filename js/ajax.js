@@ -84,8 +84,9 @@ window.onload = function() {
 	$("add").addEventListener("click", display_all_books);
 	$("operator").addEventListener("click", operator_set);
 	$("all_books").addEventListener("click", add_book);
-	//$("all_books").addEventListener("mouseout", function(){$("all_books").style="display:none";});
-	$("saveButton").addEventListener("click", save_offset);
+
+	$("saveButton").addEventListener("click", function(){save_offset(); getBooks(true);});
+	$("all_books_shell").addEventListener("click", function(){$("all_books_shell").style = "display:none";});
 }
 
 window.onbeforeunload = function() {
@@ -101,9 +102,6 @@ function getBooks(flag) {
 			}
 			
             if (this.readyState == 4 && this.status == 200) {
-				// 我不知道为什么不加这一句在首次页面载入完成后使用保存函数会提示找不到length属性
-				$("readMain").innerHTML = "";
-				
                 books_buffer = JSON.parse(this.responseText);
 				
 				for (i=0; i<books_buffer.length; i++) {
@@ -122,6 +120,9 @@ function getBooks(flag) {
             } // end if
             // 异步加载第一本书
             if (current_book !== "" && flag) {
+		// 我不知道为什么不加这一句在首次页面载入完成后使用保存函数会提示找不到length属性
+		$("readMain").innerHTML = "";
+
                 // 重置prev_offset
 				Ajax("GET", "init.php?book="+current_book).callback(function() {
 					if (this.readyState == 4 && this.status == 200) {
@@ -192,12 +193,14 @@ function display_all_books() {
 				
 				for (i=0; i<all_books.length; i++) {
 					var node = document.createElement("li");
-					node.style = "list-style-type:none";
+					node.style = "list-style-type:none; cursor:pointer;";
 					node.innerHTML = decodeURI(all_books[i]);
+					node.title = "点击增加书籍";
 					$("all_books").appendChild(node);
 				}
 				
-				$("all_books").style = "display:block";
+			//		$("all_books").style = "display:block";
+				$("all_books_shell").style = "display:block";
 			}
 		}
 	)

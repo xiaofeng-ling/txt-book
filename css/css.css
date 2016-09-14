@@ -55,6 +55,16 @@ div.all_books_style
 	background-color:green;
 }
 
+div.close
+{
+	position:absolute;
+	top:0px;
+	right:0px;
+	height:20px;
+	width:20px;
+	cursor:pointer;
+}
+
 body
 {
 	font-family:"微软雅黑", "宋体"
