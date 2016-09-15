@@ -3,7 +3,7 @@
 require_once('sql.php');
 
 // 这是返回书籍数据库中的所有书籍
-function get_all_books()
+function get_all_books_from_database()
 {
 	$sql = mysql_connect(SQL_ADDRESS, SQL_USERS, SQL_PASSWD);
 
@@ -29,7 +29,5 @@ function get_all_books()
 
 	return json_encode($array_ret);
 }
-
-echo get_all_books();
 	
 ?>

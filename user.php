@@ -187,9 +187,6 @@ class User
 		
 		unset($this->books);
 		$this->books = $new_books;
-		
-		if (!$this->books)
-			die('获取书籍失败！\n');
 	}
 
 	public function add_book($book)

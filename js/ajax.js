@@ -95,7 +95,7 @@ window.onbeforeunload = function() {
 }
 
 function getBooks(flag) {
-        Ajax("GET", "getbooks.php").callback(function() {
+        Ajax("GET", "operator.php?operator=6&book=book").callback(function() {
 			if (this.responseText == "用户未登陆") {
 				$("readMain").innerHTML = this.responseText;
 				return -1;
@@ -124,7 +124,7 @@ function getBooks(flag) {
 		$("readMain").innerHTML = "";
 
                 // 重置prev_offset
-				Ajax("GET", "init.php?book="+current_book).callback(function() {
+				Ajax("GET", "operator.php?operator=7&book="+current_book).callback(function() {
 					if (this.readyState == 4 && this.status == 200) {
 						if (this.responseText == "重置成功！")
 							;
@@ -185,7 +185,7 @@ function displayNone() {
 
 function display_all_books() {
 	// 此函数用于显示所有的书籍
-	Ajax("GET", "tools.php").callback(
+	Ajax("GET", "operator.php?operator=8&book=book").callback(
 		function() {
 			if (this.readyState == 4 && this.status == 200) {
                 all_books = JSON.parse(this.responseText);
@@ -209,7 +209,7 @@ function display_all_books() {
 function load_next() {
 	ajax_lock = 1;
 	
-	Ajax("GET", "next.php?book="+current_book).callback(
+	Ajax("GET", "operator.php?operator=1&book="+current_book).callback(
 		function() {
 			if (this.readyState == 4 && this.status == 200) {
 				if (this.responseText.length == 0)
@@ -231,7 +231,7 @@ function load_next() {
 function load_prev() {
 	ajax_lock = 1;
 	
-	Ajax("GET", "prev.php?book="+current_book).callback(
+	Ajax("GET", "operator.php?operator=2&book="+current_book).callback(
 		function() {
 			if (this.readyState == 4 && this.status == 200) {
 				if (this.responseText.length == 0)
@@ -285,7 +285,7 @@ function save_offset() {
 		}
 	}
 	
-	Ajax("GET", "save.php?book="+current_book+"&offset="+utf8_bytes).callback(
+	Ajax("GET", "operator.php?operator=3&book="+current_book+"&offset="+utf8_bytes).callback(
 		function() {
 			if (this.readyState == 4 && this.status == 200) {
 				if (this.responseText == "保存成功！") {
@@ -336,10 +336,10 @@ function switch_book(e) {
 	if (operator_flag)
 		del_book(e);
 	else
-		change(e);
+		change_book(e);
 }
 
-function change(e) {
+function change_book(e) {
 	if (true == confirm("确认切换至小说：" + e.target.innerHTML)) {
 		current_book = e.target.innerHTML;
 		$("readMain").innerHTML = "";
@@ -348,7 +348,7 @@ function change(e) {
 		(function() {
 			if (current_book !== "") {
 				// 重置prev_offset
-				Ajax("GET", "init.php?book="+current_book).callback(function() {
+				Ajax("GET", "operator.php?operator=7&book="+current_book).callback(function() {
 				if (this.readyState == 4 && this.status == 200) {
 					if (this.responseText == "重置成功！")
 						;
@@ -373,7 +373,7 @@ function change(e) {
 function del_book(e) {
 	if (true == confirm("确认删除小说：" + e.target.innerHTML)) {
 		(function() {
-			Ajax("GET", "deletebook.php?book="+e.target.innerHTML).callback(function() {
+			Ajax("GET", "operator.php?operator=5&book="+e.target.innerHTML).callback(function() {
 				if (this.readyState == 4 && this.status == 200) {
 					alert(this.responseText);
 					getBooks(current_book == e.target.innerHTML);
@@ -389,7 +389,7 @@ function add_book(e) {
 	e = e || window.event;
 	
 	if (true == confirm("确认增加小说《"+e.target.innerHTML + "》？")) {
-		Ajax("GET", "addbook.php?book=" + e.target.innerHTML).callback(
+		Ajax("GET", "operator.php?operator=4&book=" + e.target.innerHTML).callback(
 			function() {
 				if (this.readyState == 4 && this.status == 200) {
 					alert(this.responseText);
