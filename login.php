@@ -45,12 +45,14 @@ function login()
 			
 			$_SESSION['user'] = $name;
 			
-			return '<script>location.href="index.html";</script>';
+			header('location: index.html');
+			exit();
 		}
 	}
 	else
 	{
 		header('location: index.html');
+		exit();
 	}
 }
 
@@ -98,6 +100,7 @@ function register()
 用户名:<input type="text" name="name"><br>
 密码:<input type="password" name="password"><br>
 <input type="submit" value="登陆">
+<!-- 默认类型为submit，设定类型为button来禁止点击此按钮时提交表单 -->
 <button type="button" onclick="register()">注册</button>
 <?php echo "<div>".$error."</div>" ?>
 </form>
