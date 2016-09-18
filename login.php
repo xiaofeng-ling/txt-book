@@ -44,12 +44,13 @@ function login()
 				return '账号或者密码错误！';
 			
 			$_SESSION['user'] = $name;
-			header('localtion: loged.html');
+			
+			return '<script>location.href="index.html";</script>';
 		}
 	}
 	else
 	{
-		header('location: loged.html');
+		header('location: index.html');
 	}
 }
 
@@ -84,6 +85,11 @@ function checkForm()
 		return false;
 	}
 }
+
+function register()
+{
+	location.href="register.php";
+}
 </script>
 
 <body>
@@ -92,6 +98,7 @@ function checkForm()
 用户名:<input type="text" name="name"><br>
 密码:<input type="password" name="password"><br>
 <input type="submit" value="登陆">
+<button type="button" onclick="register()">注册</button>
 <?php echo "<div>".$error."</div>" ?>
 </form>
 

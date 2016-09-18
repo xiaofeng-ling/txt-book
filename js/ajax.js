@@ -96,9 +96,11 @@ window.onbeforeunload = function() {
 
 function getBooks(flag) {
         Ajax("GET", "operator.php?operator=6&book=book").callback(function() {
-			if (this.responseText == "用户未登陆") {
-				$("readMain").innerHTML = this.responseText;
-				return -1;
+			if (this.responseText == "用户未登陆!") {
+			//	$("readMain").innerHTML = this.responseText;
+			//	return -1;
+			//	重定向至登录页面
+				location.href = "login.php";
 			}
 			
             if (this.readyState == 4 && this.status == 200) {
