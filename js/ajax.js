@@ -178,11 +178,11 @@ function wheel(event) {
 }
 
 function displayBlock() {
-	$("setting").style = "display:block";
+	$("setting").style.display = "block";
 }
 
 function displayNone() {
-	$("setting").style = "display:none";
+	$("setting").style.display = "none";
 }
 
 function display_all_books() {
