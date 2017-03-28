@@ -1,0 +1,41 @@
+<!doctype html>
+<meta charset="UTF-8">
+<html>
+<head>
+<title id="read_title">欢迎阅读！</title>
+<link rel="stylesheet" content="text/css" href="css/read.css" charset="utf-8">
+</head>
+
+<script src="js/tools.js"></script>
+<script src="js/connect.object.js"></script>
+<script src="js/read.js"></script>
+
+<!-- 点击翻页 -->
+<body id="readBody">
+
+<!-- setting层排在调用层上用以避免onmouseove冒泡时产生闪烁 -->
+<div id="setting" class="right_setting">
+	<button id="saveButton">保存进度</button><br>
+	
+	<button id="add">增加</button>
+	
+	<form id="books">
+	</form>
+	
+	<button id="operator">切换模式</button>
+
+</div>
+
+<div id="feature" class="right_feature"></div>
+
+<!-- 阅读主体 -->
+<div id="readMain" style="z-index:8;">
+</div>
+
+<!-- 显示所有书籍 -->
+<div id="all_books_left" class="all_books_left"></div>
+<div id="all_books_right" class="all_books_right"></div>
+
+</body>
+
+</html>
