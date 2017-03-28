@@ -1,0 +1,15 @@
+.main {
+	background-color: blue;
+}
+
+.main div {
+	border: 1px solid red;
+	margin: 0px;
+	padding: 2px;
+	float:left;
+}
+
+.maian p {
+	margin: 0px;
+	padding: 0px;
+}

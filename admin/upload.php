@@ -1,58 +1,70 @@
 <?php
 
-require_once("../sql.php");
-require_once("./uploadFile.php");
+session_start();
 
-$ret = '';
-if (($ret = uploadFile()) != "合并完成")
-	echo $ret;
-else
+require_once("../include/user.admin.class.php");
+
+function upload()
 {
-	/* 移动文件到txt目录 */
-	$filename = "../txt/".urlencode($_SESSION['filename']);
-	
-	if (!rename(PATH.$_SESSION['filename'], $filename))
-		die("移动文件失败");
-	
-	/* 连接数据库 */
-	$sql = mysql_connect(SQL_ADDRESS, SQL_USERS, SQL_PASSWD);
-	
-	if (!$sql)
-		return "打开数据库失败";
-	
-	mysql_select_db('txt_book', $sql);
-	
-	/* 转换文件编码 */
-	$fp = fopen("../txt/" . $filename, "r+");
-
-	if (!$fp)
-		return "上传文件出错！\n";
-	
-	$in_buffer = fread($fp, get_file_size($fp));
-	$out_buffer = mb_convert_encoding($in_buffer, "UTF-8", "GB2312, GBK, UTF-8, UNICODE");
-	
-	/* 移动文件指针到头部 */
-	fseek($fp, 0);
-	
-	if (!fwrite($fp, $out_buffer))
-		return "上传文件出错！\n";
-	
-	fclose($fp);
-	
-	$sql_query = "INSERT INTO txt_book_books ".
-				 "(class, name, author, introduction, path, score) ".
-				 "VALUES ".
-				 "('temp', '$filename', 'temp', 'temp', " . "'./txt/". "$filename'". ", 0)";
-				 /* 此处采用./txt/是因为对应的运行文件并不在这里 */
-				 
-	if (!$ret = mysql_query($sql_query, $sql))
+	if (!isset($_SESSION['user']))
 	{
-		/* 不成功则直接删除文件 */
-		unlink("../txt/".$filename);
-		return "上传失败！\n";
+		header("location: ../login.php");
+		exit();
+	}
+
+	$user = new UserAdmin($_SESSION['user']);
+
+	if (!($user->permission & 2))
+	{
+		echo "没有权限访问这个页面！";
+		exit();
+	}
+
+	if (!isset($_FILES["file"]))
+	{
+		return "请上传文件";
+	}
+
+	if ($_FILES["file"]["error"] > 0)
+	{
+		return "上传文件失败";
+	}
+
+	if ($_FILES["file"]["type"] != "text/plain")
+	{
+		return "格式不正确";
 	}
 	
-	echo "合并完成";
+	$result = $user->upload($_FILES["file"]["tmp_name"], $_FILES["file"]["name"]);
+	
+	return $result['error_message'];
 }
 
+$error = upload();
+
+// 以下为html代码
+
 ?>
+
+<!doctype html>
+<meta charset="utf-8">
+
+<html>
+
+<head>
+	<title>上传文件</title>
+</head>
+
+</script>
+
+<body>
+
+<form id="upload" action="upload.php" method="post" enctype="multipart/form-data">
+	<input id="fileuplaod" name="file" type="file" accept="text/plain" />
+	<input id="submit" type="submit" value="上传" />
+	<?php echo "<div>".$error."</div>"; ?>
+</form>
+
+</body>
+
+</html>

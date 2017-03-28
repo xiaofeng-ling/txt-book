@@ -1,0 +1,66 @@
+.sort {
+	position: fixed;
+	margin: 0px;
+	padding: 0px;
+	width: 100%;
+	height: 25px;
+	background-color: red;
+	display:block;
+}
+
+ul {
+	list-style-type: none;
+	margin: 0px;
+	padding: 0px;
+}
+
+.sort li {
+	display: inline;
+	float: left;
+}
+
+.sort a {
+	display: block;
+	width: 60px;
+	text-decoration: none;
+}
+
+.main a {
+	display:block;
+	width: 40px;
+	text-decoration: none;
+	right: 5px;
+	float: right;
+}
+
+.main {
+	display:block;
+}
+
+.main p {
+	margin: 3px;
+	padding: 0px;
+}
+
+.pageNum {
+	display:block;
+}
+
+.pageNum a {
+	display:block;
+	border: 1px solid;
+	float: left;
+	margin: 5px;
+	padding: 5px;
+	height: auto;
+	width: auto;
+	text-decoration: none;
+}
+
+.pageNum span {
+	float: left;
+}
+
+a.selected {
+	border: 0px;
+}
