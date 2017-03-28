@@ -12,7 +12,7 @@
 **	6		get_all_books
 **	7		reset_prev_offset
 **  8		get_all_class
-**	9		get_user_books
+**	9		get_all_books(user)
 **	10		get_class_num
 */
 

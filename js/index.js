@@ -10,7 +10,7 @@
 		$("main").addEventListener("click", addBook);
 		$("pageNum").addEventListener("click", loadPage);
 		$("category_ul").addEventListener("click", changeClass);
-		
+
 		getClass();
 		
 		return 1;
@@ -24,25 +24,21 @@
 		operator.operator_code = 6;
 		operator.category = category;
 		operator.pages = pageNum;
-		
-		$.ajax.send($.phpEvent, function() {
-			if (this.readyState == 4 && this.status == 200) {
-				var result = $.decode(this.responseText);
-				
-				if ("error_code" in result)
-					if (result.error_message == "noLogin")
-						window.location = "login.php";
-					else {
-						alert(result.error_message);
-						return -1;
-					}
-				
-				for (x in result) {
-					var node = document.createElement("div");
-					node.innerHTML = "<li>" + result[x].name + "<a id=\"add\" href=\"#\">添加</a></li> <p>" + result[x].introduction + "</p>";
-					$("main_ul").appendChild(node);
+		$.ajax($.phpEvent, function(result) {
+			var result = $.decode(result);
+			
+			if ("error_code" in result)
+				if (result.error_message == "noLogin")
+					window.location = "login.php";
+				else {
+					alert(result.error_message);
+					return -1;
 				}
-				
+			
+			for (x in result) {
+				var node = document.createElement("div");
+				node.innerHTML = "<li>" + result[x].name + "<a id=\"add\" href=\"#\">添加</a></li> <p>" + result[x].introduction + "</p>";
+				$("main_ul").appendChild(node);
 			}
 		}, $.encode(operator));
 		
@@ -56,28 +52,26 @@
 		
 		operator.operator_code = 8;
 		
-		$.ajax.send($.phpEvent, function() {
-			if (this.readyState == 4 && this.status == 200) {
-				var result = $.decode(this.responseText);
-				
-				if ("error_code" in result)
-					if (result.error_message == "noLogin")
-						window.location = "login.php";
-					else {
-						alert(result.error_message);
-						return -1;
-					}
-				
-				for (x in result) {
-					var node = document.createElement("li");
-					node.innerHTML = "<a href=\"#\">" + result[x].class + "</a>";
-					$("category_ul").appendChild(node);
+		$.ajax($.phpEvent, function(result) {		
+			var result = $.decode(result);
+			
+			if ("error_code" in result)
+				if (result.error_message == "noLogin")
+					window.location = "login.php";
+				else {
+					alert(result.error_message);
+					return -1;
 				}
-				
-				category = result[0].class;
-				getBooks(result[0].class, 1);
-				getClassNum(result[0].class);
+			
+			for (x in result) {
+				var node = document.createElement("li");
+				node.innerHTML = "<a href=\"#\">" + result[x].class + "</a>";
+				$("category_ul").appendChild(node);
 			}
+			
+			category = result[0].class;
+			getBooks(result[0].class, 1);
+			getClassNum(result[0].class);
 		}, $.encode(operator));
 	}
 	
@@ -93,15 +87,13 @@
 		operator.operator_code = 4;
 		operator.book = getText2(e.target.parentNode);
 		
-		$.ajax.send($.phpEvent, function() {
-			if (this.readyState == 4 && this.status == 200) {
-				var msg = $.decode(this.responseText);
+		$.ajax($.phpEvent, function(result) {
+				var msg = $.decode(result);
 				
 				if (msg.error_code != -1 && msg.error_message == "noLogin")
 					window.location = "login.php";
 				
-				alert("添加成功");				
-			}
+				alert("添加成功");
 		}, $.encode(operator));
 		
 	}
@@ -111,30 +103,28 @@
 		operator.operator_code = 10;
 		operator.class = category;
 		
-		$.ajax.send($.phpEvent, function() {
-			if (this.readyState == 4 && this.status == 200) {
-				var result = $.decode(this.responseText);
-				
-				pageNum = 50 //result.count;
-				
-				if (pageNum/10 <= 4) {
-					for (var i=1; i<pageNum/10+1; i++) {
-						$.addNode("pageNum", "a", i, {href: "#"});
-					}
+		$.ajax($.phpEvent, function(result) {
+			var result = $.decode(result);
+			
+			pageNum = result.count;
+			
+			if (pageNum/10 <= 4) {
+				for (var i=1; i<pageNum/10+1; i++) {
+					$.addNode("pageNum", "a", i, {href: "#"});
 				}
-				else {
-					for (var i=1; i<5; i++) {
-						var nodes = document.createElement("a");
-						nodes.href = "#";
-						nodes.innerHTML = i;
-						$("pageNum").appendChild(nodes);
-					}
-					
-					$.addNode("pageNum", "span", "...");
-					
-					$.addNode("pageNum", "a", pageNum/10, {href: "#"});
-					$.addNode("pageNum", "a", pageNum/10+1, {href: "#"});
+			}
+			else {
+				for (var i=1; i<5; i++) {
+					var nodes = document.createElement("a");
+					nodes.href = "#";
+					nodes.innerHTML = i;
+					$("pageNum").appendChild(nodes);
 				}
+				
+				$.addNode("pageNum", "span", "...");
+				
+				$.addNode("pageNum", "a", pageNum/10, {href: "#"});
+				$.addNode("pageNum", "a", pageNum/10+1, {href: "#"});
 			}
 		}, $.encode(operator));
 	}

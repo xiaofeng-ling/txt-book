@@ -188,7 +188,7 @@ class UserCommon extends User
 
 	public function get_all_books()
 	{		
-		return array_keys($this->books);
+		return array_keys($this->data->decode_array($this->books, TRUE));
 	}
 	
 	/*

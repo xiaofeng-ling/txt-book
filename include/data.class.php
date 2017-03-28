@@ -271,7 +271,7 @@ class Data
 		foreach($array as $key=>$value)
 		{
 			if (TRUE == $key_name)
-				$temp[$this->encode($key)] = $array[$key];
+				$temp[$this->decode($key)] = $array[$key];
 			else
 				$temp[$key] = $this->decode($value);
 		}

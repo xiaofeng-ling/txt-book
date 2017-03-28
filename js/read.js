@@ -62,7 +62,6 @@
 	
 	function loadNext() {
 		var operator = new Object();
-		var result;
 		
 		ajaxLock = 0;
 		
@@ -70,17 +69,14 @@
 		operator.operator_code = 1;
 		operator.book = currentBook;
 		
-		$.ajax.send($.phpEvent, function() {
-			if (this.readyState == 4 && this.status == 200) {
+		$.ajax($.phpEvent, function(result) {
+			var result = $.decode(result);
+			
+			if (result.error_code == -1) {
 				
-				result = $.decode(this.responseText);
-				
-				if (result.error_code == -1) {
-					
-					/* 以数据的1024分割，创建span节点，替换其中的特殊字符，将\n替换为HTML中的<br>标签 */
-					for(var i=0; i<result.data.length; i += 1024)
-						$.addNode("readMain", "span", result.data.substr(i, 1024).replace(/</g, "&#60").replace(/\r*\n+/g, "<br>"));
-				}
+				/* 以数据的1024分割，创建span节点，替换其中的特殊字符，将\n替换为HTML中的<br>标签 */
+				for(var i=0; i<result.data.length; i += 1024)
+					$.addNode("readMain", "span", result.data.substr(i, 1024).replace(/</g, "&#60").replace(/\r*\n+/g, "<br>"));
 			}
 			
 			ajaxLock = 1;
@@ -97,18 +93,15 @@
 		operator.operator_code = 2;
 		operator.book = currentBook;
 		
-		$.ajax.send($.phpEvent, function() {
-			if (this.readyState == 4 && this.status == 200) {
+		$.ajax($.phpEvent, function(result) {
+			var result = $.decode(result);
 				
-				var result = $.decode(this.responseText);
+			if (result.error_code == -1) {
 				
-				if (result.error_code == -1) {
-					
-					/* 以数据的1024分割，创建span节点，替换其中的特殊字符，将\n替换为HTML中的<br>标签
-                       与get_next()函数不同，这个函数是从下往上类似于搭积木一样增加节点				*/
-					for(var i=0; i<result.data.length; i += 1024)
-						$.addNode("readMain", "span", result.data.substr(i * -1, 1024).replace(/</g, "&#60").replace(/\r*\n+/g, "<br>"));
-				}
+				/* 以数据的1024分割，创建span节点，替换其中的特殊字符，将\n替换为HTML中的<br>标签
+				   与get_next()函数不同，这个函数是从下往上类似于搭积木一样增加节点				*/
+				for(var i=0; i<result.data.length; i += 1024)
+					$.addNode("readMain", "span", result.data.substr(i * -1, 1024).replace(/</g, "&#60").replace(/\r*\n+/g, "<br>"));
 			}
 			
 			ajaxLock = 1;
@@ -139,12 +132,10 @@
 		operator.book = currentBook;
 		
 		/* 发送请求处理数据 */
-		$.ajax.send($.phpEvent, function() {
-			if (this.readyState == 4 && this.status == 200) {
-				if ($.decode(this.responseText).error_code == -1) {
-					alert("保存成功！\n");
-					return 1;
-				}
+		$.ajax($.phpEvent, function(result) {
+			if ($.decode(result).error_code == -1) {
+				alert("保存成功！\n");
+				return 1;
 			}
 			else
 				return 0;
@@ -159,12 +150,10 @@
 		operator.operator_code = 7;
 		operator.book = currentBook;
 		
-		$.ajax.send($.phpEvent, function() {
-			if (this.readyState == 4 && this.status == 200) {
-				if ($.decode(this.responseText).error_code == -1) {
-					// 做一些操作
-					return 1;
-				}
+		$.ajax($.phpEvent, function(result) {
+			if ($.decode(result).error_code == -1) {
+				// 做一些操作
+				return 1;
 			}
 			else
 				return 0;

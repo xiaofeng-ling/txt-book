@@ -19,15 +19,21 @@
 	// 全局变量
 	$.ajax = new ajax();
 	*/
-	
-	$.ajax = function(url, callback, data) {
+	$.ajax = function(url, callback, data) {		
 		data = data || "";
 		
 		var http = new XMLHttpRequest();
 		http.open("POST", url, true);
+		
+		/*
+		不建议使用这样的方式，这段代码用于在执行的时候将回调函数的
+		this指向一个XMLHttpRequest对象，从而获得其属性
+		*/
+		http.callback = callback;
+		
 		http.onload = function() {
 			if (http.status = 200)
-				callback();
+				http.callback(http.responseText);
 			else
 				console.log("请求失败");
 		}
