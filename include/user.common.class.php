@@ -17,13 +17,15 @@ class UserCommon extends User
 	*/
 	public function __construct($name)
 	{
-		parent::__construct($name, 1);
+		parent::__construct($name);
 
 		$this->error = new Error();
 				
 		$this->data = new Data(SQL_DATABASE, SQL_USERNAME, SQL_PASSWORD, SQL_ADDRESS, $this->error);
 
 		$this->read_books($name);
+		
+		$this->get_permission();
 	}
 
 	/*
@@ -132,12 +134,13 @@ class UserCommon extends User
 		
 		$new_books = $this->data->encode_array($this->books, true);
 		
-		$books = json_encode($new_books);
+		$books = mysql_real_escape_string(json_encode($new_books));
+		$name = mysql_real_escape_string($this->name);
 		
 		if (!$books)
 			return $this->error->error_handle(4, '编码失败');
 		
-		$result = $this->data->query("UPDATE txt_book_users SET books='$books' WHERE name='$this->name'", FALSE);
+		$result = $this->data->query("UPDATE txt_book_users SET books='$books' WHERE name='$name'", FALSE);
 		
 		if (!$this->error->is_no_error($result))
 			return $this->error->error_handle(4, "保存书籍失败！");
@@ -228,7 +231,9 @@ class UserCommon extends User
 	
 	public function read_books()
 	{
-		$result = $this->data->query("SELECT books FROM txt_book_users WHERE name='$this->name'");
+		$name = mysql_real_escape_string($this->name);
+		
+		$result = $this->data->query("SELECT books FROM txt_book_users WHERE name='$name'");
 		
 		if (!$this->error->is_no_error($result))
 			return $this->error->error_handle(4, "读取书籍失败！");
@@ -240,6 +245,31 @@ class UserCommon extends User
 		$this->books = $new_books;
 		
 		return $this->error->no_error();
+	}
+	
+	/*
+	description:	初始化权限
+	params:		无参数
+	return:		成功返回no_error(), 不成功返回相应的错误
+	*/
+	protected function get_permission()
+	{
+		$name = mysql_real_escape_string($this->name);
+		
+		$result = $this->data->query("SELECT permission FROM txt_book_users WHERE name='$name'");
+		
+		try
+		{
+			if (!$this->error->is_no_error($result))
+				throw new Exception("初始化权限失败！");
+			
+			$this->permission = (int)$result;
+		}
+		catch(Exception $e)
+		{
+			echo $e->getMessage();
+			exit();
+		}
 	}
 }
 

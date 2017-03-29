@@ -26,6 +26,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
 						name varchar(255) NOT NULL,
 						passwd text CHARACTER SET latin1 NOT NULL,
 						books text CHARACTER SET latin1 NOT NULL,
+						permission tinyint NOT NULL,
 						date timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 						PRIMARY KEY (id),
 						UNIQUE KEY name (name))

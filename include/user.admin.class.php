@@ -9,15 +9,16 @@ class UserAdmin extends User
 {
 	private $data;
 	
-	public $permission = 2;
 	public $error;
 	
 	public function __construct($name)
 	{
-		parent::__construct($name, $this->permission);
+		parent::__construct($name);
 		
 		$this->data = new Data(SQL_DATABASE, SQL_USERNAME, SQL_PASSWORD);
 		$this->error = new Error();
+		
+		$this->get_permission();
 	}
 
 	public function __destruct()
@@ -29,7 +30,7 @@ class UserAdmin extends User
 		if (!file_exists($temp_name))
 			return $this->error->error_handle(4, "文件不存在！");
 		
-		$encode_name = $this->data->encode($filename);
+		$encode_name = mysql_real_escape_string($this->data->encode($filename));
 		$filepath = "upload/" . $encode_name;
 		
 		
@@ -55,6 +56,25 @@ class UserAdmin extends User
 				return $this->error->error_handle(4, "存储路径出错".mysql_error());
 				
 		return $this->error->no_error();
+	}
+	
+	protected function get_permission()
+	{
+		$name = mysql_real_escape_string($this->name);
+		
+		$result = $this->data->query("SELECT permission FROM txt_book_users WHERE name='$name'");
+		
+		try
+		{
+			if (!$this->error->is_no_error($result))
+				throw new Exception("初始化权限失败！");
+			
+			$this->permission = (int)$result;
+		}
+		catch(Exception $e)
+		{
+			echo $e->getMessage();
+		}
 	}
 
 }

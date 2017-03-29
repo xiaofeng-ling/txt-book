@@ -4,22 +4,23 @@
 用户基类
 */
 
-class User
+abstract class User
 {
 
 	protected $name;		// @string
 	protected $permission;	// @array
 	
-	public function __construct($name, $permission)
+	public function __construct($name)
 	{
 		$this->name = $name;
-		$this->permission = $permission;
 	}
 
 	public function __destruct()
 	{
 		// do nothing
 	}
+	
+	abstract protected function get_permission();
 }
 
 ?>
