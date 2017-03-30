@@ -60,7 +60,12 @@ $error = upload();
 <body>
 
 <form id="upload" action="upload.php" method="post" enctype="multipart/form-data">
-	<input id="fileuplaod" name="file" type="file" accept="text/plain" />
+	<p><input id="fileuplaod" name="file" type="file" accept="text/plain" /></p>
+	<p>
+		<input name="fileClass" placeholder="分类" />
+		<input name="author" placeholder="作者" />
+		<input name="introduction" placeholder="介绍" />
+	</p>
 	<input id="submit" type="submit" value="上传" />
 	<?php echo "<div>".$error."</div>"; ?>
 </form>

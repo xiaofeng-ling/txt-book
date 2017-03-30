@@ -10,6 +10,7 @@ class UserAdmin extends User
 	private $data;
 	
 	public $error;
+	public $permission = 2;
 	
 	public function __construct($name)
 	{
@@ -18,7 +19,7 @@ class UserAdmin extends User
 		$this->data = new Data(SQL_DATABASE, SQL_USERNAME, SQL_PASSWORD);
 		$this->error = new Error();
 		
-		$this->get_permission();
+		//$this->get_permission();
 	}
 
 	public function __destruct()
@@ -34,13 +35,13 @@ class UserAdmin extends User
 		$filepath = "upload/" . $encode_name;
 		
 		
-		if (file_exists($this->encode($filepath)))
+		if (file_exists($this->data->encode($filepath)))
 			return $this->error->error_handle(4, "文件已存在！");
 		
-		$result = $this->data->query("SELECT * FROM txt_book_books WHERE name = '$encodename'");
+		$result = $this->data->query("SELECT * FROM txt_book_books WHERE name = '$encode_name'");
 		
-		if (!$this->data->book_exist($encode_name) && $this->error->is_node_error($result))
-			if (!$this->data->query("DELETE * FROM txt_book_books WHERE name = '$encodename'", false))
+		if (!$this->data->book_exist($encode_name) && $this->error->is_no_error($result))
+			if (!$this->data->query("DELETE * FROM txt_book_books WHERE name = '$encode_name'", false))
 				return $this->error->error_handle(4, "数据库中的书籍路径与文件路径不一致！");
 		else
 			return $this->data->error->get_last_error();
@@ -48,10 +49,28 @@ class UserAdmin extends User
 		if (!move_uploaded_file($temp_name, $filepath))
 			return $this->error->error_handle(4, "上传文件失败！");
 		
-		if ($this->data->query("INSERT INTO txt_book_books".
+		/* 写入作者、分类、介绍等信息 */
+		$class = "other";
+		$author = "佚名";
+		$introduction = "没有介绍";
+		
+		if (!empty($_POST["fileClass"]))
+			$class = $_POST["fileClass"];
+		
+		if (!empty($_POST["author"]))
+			$author = $_POST["author"];
+		
+		if (!empty($_POST["introduction"]))
+			$introduction = $_POST["introduction"];
+		
+		$class = mysql_real_escape_string($this->data->encode($class));
+		$author = mysql_real_escape_string($this->data->encode($author));
+		$introduction = mysql_real_escape_string($this->data->encode($introduction));
+		
+		if (!$this->data->query("INSERT INTO txt_book_books".
 						"(class, name, author, introduction, path, score) ".
 						"VALUES ".
-						"('test', '$encodename', 'test', 'test', '".
+						"('$class', '$encode_name', '$author', '$introduction', '".
 						$filepath . "', 0)", false))
 				return $this->error->error_handle(4, "存储路径出错".mysql_error());
 				
