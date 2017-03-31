@@ -56,10 +56,16 @@ class Connect
 
 	public function send_data($data)
 	{
-		$this->net_buffer = $data;
+		if (!is_string($data))
+			$data = json_encode($data);
+		
+		if (ord($data) != ord("[") && ord($data) != ord("{"))
+			return $this->error->error_handle(4, "数据不是json格式！");
 		
 		if (strlen($data) == 0)
 			return $this->error->error_handle(4, "没有发送数据!\n");
+		
+		$this->net_buffer = $data;
 
 		$len = 0;
 

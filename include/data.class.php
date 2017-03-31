@@ -183,7 +183,7 @@ class Data
 		
 		mysql_select_db($this->mysql_db_name);
 		
-		$class = mysql_real_escape_string($class);
+		$class = $this->encode(mysql_real_escape_string($class));
 		
 		$result = mysql_query("SELECT * FROM txt_book_books WHERE class = '$class' LIMIT $limit_head,$limit_tail", $this->mysql_instance);
 		
@@ -218,7 +218,7 @@ class Data
 		$class = array();
 		
 		for ($i=0; is_array($temp = mysql_fetch_array($result, MYSQL_ASSOC)); $i++)
-			$class[$i] = $temp;
+			$class[$i] = $this->decode_array($temp);
 		
 		return $class;
 	}

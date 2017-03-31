@@ -22,8 +22,16 @@
 	$.ajax = function(url, callback, data) {		
 		data = data || "";
 		
+		if (data != "" && typeof(data) != "string")
+			data = $.encode(data);
+		
+		if (data != "" && data.charAt(0) != '[' && data.charAt(0) != '{') {
+			console.log("转换成JSON格式失败！");
+			return -1;
+		}
+		
 		var http = new XMLHttpRequest();
-		http.open("POST", url, true);
+		http.open("POST", url, true);		
 		
 		/*
 		不建议使用这样的方式，这段代码用于在执行的时候将回调函数的
