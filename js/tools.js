@@ -11,7 +11,10 @@
 	$.encode = function(data) {
 		return JSON.stringify(data);
 	}
-	
+
+	/*
+ 	该函数暂时被废弃
+	*/	
 	$.changeTo = function(page) {		
 		if ("books" == page)
 			document.write();

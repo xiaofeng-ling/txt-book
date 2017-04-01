@@ -17,6 +17,11 @@ class Error
 		// 不做任何事
 	}
 
+	/*
+	description:	错误处理函数，将错误压栈
+	params:		int $code, string $message
+	return:		返回错误消息
+	*/
 	public function error_handle($code, $message)
 	{
 		return $this->error_array[$this->error_count++] = array('error_code'=>$code, 'error_message'=>$message);

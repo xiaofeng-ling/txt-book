@@ -59,6 +59,11 @@ class Data
 		// nothing to do...
 	}
 	
+	/*
+	description:	执行查询语句
+	params:		string $string, bool $array
+	return:		失败返回错误消息，如果$array为真，返回查询结果，否则返回查询是否成功
+	*/
 	public function query($string, $array=TRUE)
 	{
 		/* 执行查询语句，返回结果 */
@@ -79,7 +84,11 @@ class Data
 		return mysql_result($result, 0);
 	}
 
-	
+	/*
+	description:	打开书籍，取得数据
+	params:		string $book, int $offset, int $size
+	return:		错误返回错误消息，否则返回数据
+	*/
 	public function get_data($book, $offset, $size)
 	{
 		/* 取得文件数据 */
@@ -106,6 +115,11 @@ class Data
 		return $ret;
 	}
 
+	/*
+	description:	从数据库中查询书籍的物理路径
+	params:		string $book
+	return:		错误返回错误消息，否者返回实际路径
+	*/
 	public function get_book_path($book)
 	{
 		/*
@@ -125,7 +139,12 @@ class Data
 		// 返回书籍的本地路径
 		return getcwd()."/admin/".$result;
 	}
-
+	
+	/*
+	description:	登录函数
+	params:		string $name, string $password
+	return:		成功返回no_error，否则返回错误消息
+	*/
 	public function login($name, $password)
 	{
 		/*
@@ -144,6 +163,11 @@ class Data
 		return $this->error->no_error();
 	}
 
+	/*
+	description:	注册函数，注册并初始化用户的相关信息
+	params:		string $name, string $password
+	return:		成功返回no_error,否则返回对应的错误消息
+	*/
 	public function register($name, $password)
 	{
 		/*
@@ -167,6 +191,11 @@ class Data
 		return $this->error->no_error();
 	}
 	
+	/*
+	description:	获取数据库中特定分类的书籍，一次10条
+	params:		string $class, int $pages
+	return:		失败返回错误消息，否则返回已解码后的数组
+	*/
 	public function get_all_books($class, $pages)
 	{
 		/*
@@ -201,6 +230,11 @@ class Data
 		return $books;	
 	}
 	
+	/*
+	description:	获取数据库中所有的分类
+	params:		无参数
+	return:		失败返回错误消息，否则返回已解码的数组
+	*/
 	public function get_all_class()
 	{
 		/* 获取数据库中书籍的所有分类 */
@@ -223,6 +257,11 @@ class Data
 		return $class;
 	}
 	
+	/*
+	description:	统计当前数据库中该分类的书籍数量
+	params:		string $class
+	return:		失败返回错误消息，否则返回一个关联数组
+	*/
 	public function get_class_num($class)
 	{
 		/* 统计当前数据库中的该分类的书籍数目 */
@@ -237,16 +276,37 @@ class Data
 		return array('count'=>$result);
 	}
 
+	/*
+	description:	编码函数
+	params:		string $string
+	return:		失败返回错误消息，否则返回编码后的数据
+	*/
 	public static function encode($string)
 	{
+		if (!is_string($string))
+			return $this->error->error_handle(4, "不是string类型");
+
 		return urlencode($string);
 	}
 
+	/*
+	description:	解码函数
+	params:		string $string
+	return:		失败返回错误消息，否则返回解码后的数据
+	*/
 	public static function decode($string)
 	{
+		if (!is_string($string))
+			return $this->error->error_handle(4, "不是string类型");
+
 		return urldecode($string);
 	}
 	
+	/*
+	description:	编码数组,参数$key_name为true表示对键操作
+	params:		array $array, book $key_name
+	return:		失败返回错误消息，否则返回编码后的关联数组
+	*/
 	public function encode_array($array, $key_name=FALSE)
 	{
 		/* 参数$key为true表示对键操作 */
@@ -267,6 +327,11 @@ class Data
 		return $temp;
 	}
 	
+	/*
+	description:	解码数组,参数$key_name为true表示对键操作
+	params:		array $array, book $key_name
+	return:		失败返回错误消息，否则返回解码后的关联数组
+	*/
 	public function decode_array($array, $key_name=FALSE)
 	{	
 	/* 参数$key为true表示对键操作 */
@@ -287,6 +352,11 @@ class Data
 		return $temp;
 	}
 
+	/*
+	description:	查询书籍的物理路径是否存在
+	params:		string $book;
+	return:		失败或不存在返回false，否则为true
+	*/
 	public function book_exist($book)
 	{
 		/* 传入进来的为未编码的名称 */

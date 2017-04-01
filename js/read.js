@@ -144,6 +144,9 @@
 	}
 	
 	function resetPrevOffset() {
+		/*
+ 		重置上一页的偏移量，用于在切换书籍、退出时用到
+ 		*/
 		var operator = new Object();
 		
 		/* 与php交互的操作指令 */

@@ -37,6 +37,11 @@ class Connect
 		return $this->error->get_last_error();
 	}
 
+	/*
+	description:	获取数据
+	params:		string &$data
+	return:		失败返回错误消息，否则返回数据
+	*/
 	public function get_data(&$data = NULL)
 	{
 		// 仅支持post提交的数据
@@ -51,9 +56,14 @@ class Connect
 		if (NULL != $data)
 			$data = $this->net_buffer;
 		
-		return $this->error->no_error();
+		return $this->net_buffer;
 	}
 
+	/*
+	description:	发送数据到前台页面
+	params:		string $data
+	return:		失败返回错误消息，否则返回no_error
+	*/
 	public function send_data($data)
 	{
 		if (!is_string($data))

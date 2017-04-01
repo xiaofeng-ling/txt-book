@@ -11,7 +11,7 @@
 **	5		del_book
 **	6		get_all_books
 **	7		reset_prev_offset
-**  8		get_all_class
+**	8		get_all_class
 **	9		get_all_books(user)
 **	10		get_class_num
 */
@@ -39,6 +39,9 @@ class EventCommon extends AbstractEvent
 
 	public function event_handle()
 	{
+		/*
+		事件处理函数，采用swith来分支判断选择如何处理
+		*/
 		if (!$this->error->is_no_error($this->connect->init()))
 			return $this->connect->get_last_error();
 		
