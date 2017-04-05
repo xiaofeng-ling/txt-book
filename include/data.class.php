@@ -93,7 +93,11 @@ class Data
 	{
 		/* 取得文件数据 */
 		$path = '';
-		if (!file_exists($path = $this->get_book_path($book)))
+		
+		if (!$this->error->is_no_error($path = $this->get_book_path($book)))
+			return $this->error->get_last_error();
+		
+		if (!file_exists($path))
 			return $this->error->error_handle(1, '文件不存在!');
 		
 		$fp = fopen($path, "r");

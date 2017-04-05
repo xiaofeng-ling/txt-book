@@ -34,20 +34,31 @@ class UserAdmin extends User
 		$encode_name = mysql_real_escape_string($this->data->encode($filename));
 		$filepath = "upload/" . $encode_name;
 		
-		
 		if (file_exists($this->data->encode($filepath)))
 			return $this->error->error_handle(4, "文件已存在！");
 		
 		$result = $this->data->query("SELECT * FROM txt_book_books WHERE name = '$encode_name'");
 		
 		if (!$this->data->book_exist($encode_name) && $this->error->is_no_error($result))
-			if (!$this->data->query("DELETE * FROM txt_book_books WHERE name = '$encode_name'", false))
+			if (!$this->data->query("DELETE FROM txt_book_books WHERE name = '$encode_name'", false))
 				return $this->error->error_handle(4, "数据库中的书籍路径与文件路径不一致！");
 		else
 			return $this->data->error->get_last_error();
 		
-		if (!move_uploaded_file($temp_name, $filepath))
-			return $this->error->error_handle(4, "上传文件失败！");
+		/* 转换文件编码 */
+		//-------------------------------------------------------------------------
+		$fp_write = fopen($filepath, "w");
+		 
+		if (!$fp_write)
+			return $this->error->error_handle(4, "转换文件编码失败！");
+
+		$buffer = mb_convert_encoding(file_get_contents($temp_name), 'UTF-8', "GB2312, GBK, ASCII, UNICODE");
+		
+		if (!fwrite($fp_write, $buffer))
+			return $this->error->error_handle(4, "写入文件失败！");
+
+		fclose($fp_write);		 
+		//-------------------------------------------------------------------------
 		
 		/* 写入作者、分类、介绍等信息 */
 		$class = "other";

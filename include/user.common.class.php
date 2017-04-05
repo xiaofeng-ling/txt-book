@@ -41,6 +41,9 @@ class UserCommon extends User
 		
 		$buffer = $this->data->get_data($book, $this->books[$book]['next_offset'], $size*4);	// 采用utf-8编码存储的文本文件
 		
+		if (!$this->error->is_no_error($buffer))
+			return $this->data->error->get_last_error();
+		
 		// 采用mb_substr用于截取中文
 		$ret = mb_substr($buffer, 0, $size, "utf-8");
 	
@@ -75,7 +78,10 @@ class UserCommon extends User
 			/* 倒序读取 */
 			$buffer = $this->data->get_data($book, $prev_offset, $size * -4);
 		}	
-
+		
+		if (!$this->error->is_no_error($buffer))
+			return $this->data->error->get_last_error();
+		
 		// 倒序提取字符
 		$ret = mb_substr($buffer, $size*-1, $size, "utf-8");
 

@@ -74,6 +74,11 @@
 			
 			if (result.error_code == -1) {
 				
+				if (typeof(result.data) != "string") {
+					console.log("获取书籍失败！");
+					return -1;
+				}
+				
 				/* 以数据的1024分割，创建span节点，替换其中的特殊字符，将\n替换为HTML中的<br>标签 */
 				for(var i=0; i<result.data.length; i += 1024)
 					$.addNode("readMain", "span", result.data.substr(i, 1024).replace(/</g, "&#60").replace(/\r*\n+/g, "<br>"));
@@ -97,6 +102,11 @@
 			var result = $.decode(result);
 				
 			if (result.error_code == -1) {
+				
+				if (typeof(result.data) != "string") {
+					console.log("获取书籍失败！");
+					return -1;
+				}
 				
 				/* 以数据的1024分割，创建span节点，替换其中的特殊字符，将\n替换为HTML中的<br>标签
 				   与get_next()函数不同，这个函数是从下往上类似于搭积木一样增加节点				*/
