@@ -109,7 +109,7 @@ class UserCommon extends User
 			return $this->error->error_handle(4, "没有这本书！");
 		
 		if ($this->books[$book]['next_offset'] == $offset)
-			return 0;
+			return $this->error->no_error();
 		
 		$buffer = $this->data->get_data($book, $this->books[$book]['next_offset'] - $offset, $offset);
 

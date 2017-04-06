@@ -110,8 +110,14 @@
 				
 				/* 以数据的1024分割，创建span节点，替换其中的特殊字符，将\n替换为HTML中的<br>标签
 				   与get_next()函数不同，这个函数是从下往上类似于搭积木一样增加节点				*/
-				for(var i=0; i<result.data.length; i += 1024)
-					$.addNode("readMain", "span", result.data.substr(i * -1, 1024).replace(/</g, "&#60").replace(/\r*\n+/g, "<br>"));
+				for(var i=0; i<result.data.length; i += 1024) {
+
+					var node = document.createElement("span");
+					node.innerHTML = result.data.substr(i * -1, 1024).replace(/</g, "&#60").replace(/\r*\n+/g, "<br>");
+					$("readMain").insertBefore(node, $("readMain").firstChild);
+				
+					//$.addNode("readMain", "span", result.data.substr(i * -1, 1024).replace(/</g, "&#60").replace(/\r*\n+/g, "<br>"));
+				}
 			}
 			
 			ajaxLock = 1;
@@ -119,7 +125,7 @@
 	}
 	
 	function saveOffset() {
-		var child = document.body.childNodes;
+		var child = $("readMain").childNodes;
 		var txtData = new Array();
 		var operator = new Object();
 		var blob;
@@ -144,7 +150,6 @@
 		/* 发送请求处理数据 */
 		$.ajax($.phpEvent, function(result) {
 			if ($.decode(result).error_code == -1) {
-				alert("保存成功！\n");
 				return 1;
 			}
 			else

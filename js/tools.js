@@ -30,6 +30,7 @@
 		var nodes = document.createElement(nodeType);
 		nodes.innerHTML = content;
 		
+		/* 添加属性 */
 		if (typeof property == "object") {
 			for (x in property)
 				nodes[x] = property[x];
