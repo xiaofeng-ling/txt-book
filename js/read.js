@@ -19,6 +19,9 @@
 	/* 异步请求锁，防止一下子请求次数太多 */
 	var ajaxLock = 1;
 	
+	/* 每隔30秒调用一次保存函数 */
+	setInterval(saveOffset, 30 * 1000);
+	
 	/*---------------    函数    ------------------*/
 	function init() {
 		if (currentBook == "") {

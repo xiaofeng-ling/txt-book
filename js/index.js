@@ -4,7 +4,6 @@
 	/* --------------------index.js 中的全局变量 ----------------------*/
 	var category = "";		// 当前类别
 	var pageNum = 1;				// 当前页
-	var textArray = new Array();
 	
 	function loadBook() {		
 		$("main").addEventListener("click", addBook);
@@ -85,7 +84,7 @@
 		operator = new Object();
 		
 		operator.operator_code = 4;
-		operator.book = getText2(e.target.parentNode);
+		operator.book = $.getText2(e.target.parentNode);
 		
 		$.ajax($.phpEvent, function(result) {
 				var msg = $.decode(result);
@@ -149,34 +148,6 @@
 		$("main_ul").innerHTML = "";
 		
 		getBooks(category, pageNum);
-	}
-
-    function getText(element, depth=256) {
-		/* 类似于element.textContent */
-	    if (element == "" || typeof(element) == "undefined" || depth < 0)
-		    return -1;	
-		
-		depth--;
-	
-		if (element.nodeType == 3 && element.nodeValue != "\n")
-			textArray.push(element.nodeValue);	
-	
-		for (var nodes = element.childNodes, i=0; i<nodes.length; i++)
-			getText(nodes[i], depth);
-
-        return textArray;
-    }
-	
-	function getText2(element) {
-		/* 获取节点中的文本节点内容，返回获取到的第一个文本 */
-		if (element == "" || typeof(element) == "undefined")
-		    return -1;
-		
-		for (var nodes = element.childNodes, i=0; i<nodes.length; i++)
-			if (nodes[i].nodeType == 3)
-				return nodes[i].nodeValue;
-			
-		return -1;
 	}
 	
 })();

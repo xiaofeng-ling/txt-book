@@ -40,7 +40,7 @@
 		/* 点击书籍后跳入阅读界面阅读 */
 		e = e || window.event;
 		
-		window.location = "read.html?" + e.target.innerHTML;
+		window.location = "read.html?" + $.getText(e.target)[0];
 	}
 	
 })();
