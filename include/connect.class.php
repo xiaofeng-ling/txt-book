@@ -46,15 +46,17 @@ class Connect
 	{
 		// 仅支持post提交的数据
 		if (strcmp('POST', $_SERVER['REQUEST_METHOD']))
-			return $this->error->error_handle(4, "不是post方法提交的数据！\n");
+		{
+			$this->net_buffer = '';
 
-		$this->net_buffer = '';
+			while (!feof($this->input))
+				$this->net_buffer .= fread($this->input, 8192);
 
-		while (!feof($this->input))
-			$this->net_buffer .= fread($this->input, 8192);
-
-		if (NULL != $data)
-			$data = $this->net_buffer;
+			if (NULL != $data)
+				$data = $this->net_buffer;
+		}
+		else if (strcmp('GET', $_SERVER['REQUEST_METHOD']))
+			return $_GET;
 		
 		return $this->net_buffer;
 	}

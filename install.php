@@ -5,9 +5,10 @@ require_once("include/data.class.php");
 if ($_SERVER["REQUEST_METHOD"] == "POST")
 {
 	if (empty($_POST["database"]) || empty($_POST["password"]) ||
-		empty($_POST["username"]) || empty($_POST["address"]))
+		empty($_POST["username"]) || empty($_POST["address"])  ||
+		empty($_POST["rootName"]) || empty($_POST["rootPasswd"]))
 			error("不能为空！");
-		
+			
 	$fp = fopen("include/config.php", "w");
 	
 	if (!$fp)
@@ -56,6 +57,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
 		
 	fclose($fp);
 	
+	/* 创建管理员 */
+	$data = new Data($_POST["address"], $_POST["username"], $_POST["password"]);
+	
+	if (!$data->error->is_no_error($e = $data->register($_POST["rootName"], $_POST["rootPasswd"], 2)))
+		error($e['error_message']);
+	
 	header("location: welcome.php");
 	exit();	
 }
@@ -82,7 +89,9 @@ function error($msg)
 		var database = document.forms["install"]["database"].value,
 	    		password = document.forms["install"]["password"].value,
 				address = document.forms["install"]["address"].value,
-				username = document.forms["install"]["username"].value;
+				username = document.forms["install"]["username"].value,
+				rootName = document.forms["install"]["rootName"].value,
+				rootPasswd = document.forms["install"]["rootPasswd"].value;
 
 		if (null == database || "" == database) {
 			alert("数据库名不能为空！");
@@ -103,6 +112,16 @@ function error($msg)
 			alert("用户名不能为空!");
 			return false;
 		}
+		
+		if (null == rootName || "" == rootName) {
+			alert("管理员账号不能为空!");
+			return false;
+		}
+		
+		if (null == rootPasswd || "" == rootPasswd) {
+			alert("管理员密码不能为空!");
+			return false;
+		}
 
 	}
 </script>
@@ -117,6 +136,8 @@ function error($msg)
 	数据库地址：<input type="text" name="address" value="localhost" /> <br />
 	数据库用户名：<input type="text" name="username" /> <br />
 	数据库密码：<input type="password" name="password" /> <br />
+	管理员账号：<input type="text" name="rootName" /> <br />
+	管理员密码：<input type="password" name="rootPasswd" /> <br />
 	<input type="submit" value="提交" />
 	
 	</form>

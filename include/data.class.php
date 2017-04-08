@@ -172,7 +172,7 @@ class Data
 	params:		string $name, string $password
 	return:		成功返回no_error,否则返回对应的错误消息
 	*/
-	public function register($name, $password)
+	public function register($name, $password, $permission=1)
 	{
 		/*
 		注册用函数
@@ -189,7 +189,7 @@ class Data
 		
 		$book = json_encode(Array('book.txt'=>Array('next_offset'=>0, 'prev_offset'=>0)));
 		
-		if (!$this->query("INSERT INTO txt_book_users (name, passwd, books, permission) VALUES ('$name', '$md5_password', '$book', 1)", FALSE))
+		if (!$this->query("INSERT INTO txt_book_users (name, passwd, books, permission) VALUES ('$name', '$md5_password', '$book', $permission)", FALSE))
 			return $this->error->get_last_error();
 
 		return $this->error->no_error();
