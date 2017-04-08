@@ -58,12 +58,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
 	fclose($fp);
 	
 	/* 创建管理员 */
-	$data = new Data($_POST["address"], $_POST["username"], $_POST["password"]);
+	$data = new Data($_POST["database"], $_POST["username"], $_POST["password"]);
 	
 	if (!$data->error->is_no_error($e = $data->register($_POST["rootName"], $_POST["rootPasswd"], 2)))
 		error($e['error_message']);
 	
-	header("location: welcome.php");
+	header("location: login.php");
 	exit();	
 }
 
