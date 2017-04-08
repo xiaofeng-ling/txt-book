@@ -45,7 +45,7 @@ class Connect
 	public function get_data(&$data = NULL)
 	{
 		// 仅支持post提交的数据
-		if (strcmp('POST', $_SERVER['REQUEST_METHOD']))
+		if (!strcmp('POST', $_SERVER['REQUEST_METHOD']))
 		{
 			$this->net_buffer = '';
 
@@ -55,7 +55,7 @@ class Connect
 			if (NULL != $data)
 				$data = $this->net_buffer;
 		}
-		else if (strcmp('GET', $_SERVER['REQUEST_METHOD']))
+		else if (!strcmp('GET', $_SERVER['REQUEST_METHOD']))
 			return $_GET;
 		
 		return $this->net_buffer;
