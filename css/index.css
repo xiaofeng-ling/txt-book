@@ -64,3 +64,15 @@ ul {
 a.selected {
 	border: 0px;
 }
+
+.top a {
+	display:block;
+	margin: 1px;
+	padding: 1px;
+	height: auto;
+	width: auto;
+	text-decoration: none;
+	position: fixed;
+	right: 10px;
+	z-index: 10;
+}
